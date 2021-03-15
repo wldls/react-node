@@ -1,0 +1,25 @@
+{
+  "name": "react-nodebird-front",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wldls/react-node.git"
+  },
+  "author": "jiin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wldls/react-node/issues"
+  },
+  "homepage": "https://github.com/wldls/react-node#readme",
+  "dependencies": {
+    "next": "^9.5.5",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  }
+}
