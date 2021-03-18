@@ -6,9 +6,12 @@ import useinput from "../hooks/useInput";
 
 const Signup = () => {
   const [id, setId] = useinput("");
+  const [nickname, setNickname] = useinput("");
+  const [password, setPassword] = useinput("");
+  const [passwordCheck, setPasswordCheck] = useState("");
 
-  const onChangeId = useCallback(() => {
-    setId(e.target.value);
+  const setPasswordCheck = useCallback(() => {
+    setPasswordCheck(e.target.value);
   }, []);
 
   const onSubmit = useCallback(() => {}, []);
