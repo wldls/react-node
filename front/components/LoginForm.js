@@ -4,6 +4,8 @@ import Link from "next/link";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import useInput from "../hooks/useInput";
+import { useDispatch } from "react-redux";
+import { loginAction } from "../reducers/index";
 
 const ButtonWrapper = styled.div`
   margin-top: 10px;
@@ -14,7 +16,8 @@ const FormWrapper = styled(Form)`
   padding: 10px;
 `;
 
-const LoginForm = ({ setIsLoggedIn }) => {
+const LoginForm = () => {
+  const dispatch = useDispatch();
   const [id, onChangeId] = useInput("");
   const [password, onChangePassword] = useInput("");
 
@@ -31,7 +34,8 @@ const LoginForm = ({ setIsLoggedIn }) => {
 
   const onSubmitForm = useCallback(() => {
     // antd에서는 onFinish를 할 경우 e.preventDefault()가 적용되어 있다.
-    setIsLoggedIn(true);
+    // setIsLoggedIn(true);
+    dispatch(loginAction(id, password));
   }, [id, password]);
 
   // inline style을 쓰면서 리렌더링이 안되게 캐싱하려면 useMemo 사용
@@ -72,8 +76,8 @@ const LoginForm = ({ setIsLoggedIn }) => {
   );
 };
 
-LoginForm.propTypes = {
-  setIsLoggedIn: PropTypes.func.isRequired,
-};
+// LoginForm.propTypes = {
+//   setIsLoggedIn: PropTypes.func.isRequired,
+// };
 
 export default LoginForm;
