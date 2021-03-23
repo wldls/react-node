@@ -3,8 +3,8 @@ import { Form, Input, Button } from "antd";
 import Link from "next/link";
 import styled from "styled-components";
 import useInput from "../hooks/useInput";
-import { useDispatch } from "react-redux";
-import { loginAction } from "../reducers/user";
+import { useDispatch, useSelector } from "react-redux";
+import { loginRequestAction } from "../reducers/user";
 
 const ButtonWrapper = styled.div`
   margin-top: 10px;
@@ -19,6 +19,7 @@ const LoginForm = () => {
   const dispatch = useDispatch();
   const [id, onChangeId] = useInput("");
   const [password, onChangePassword] = useInput("");
+  const { isLoginPending } = useSelector((state) => state.user);
 
   // const [id, setId] = useState("");
   // const [password, setPassword] = useState("");
@@ -34,7 +35,7 @@ const LoginForm = () => {
   const onSubmitForm = useCallback(() => {
     // antd에서는 onFinish를 할 경우 e.preventDefault()가 적용되어 있다.
     // setIsLoggedIn(true);
-    dispatch(loginAction({ id, password }));
+    dispatch(loginRequestAction({ id, password }));
   }, [id, password]);
 
   // inline style을 쓰면서 리렌더링이 안되게 캐싱하려면 useMemo 사용
@@ -64,7 +65,7 @@ const LoginForm = () => {
         ></Input>
       </div>
       <ButtonWrapper>
-        <Button type="primary" htmlType="submit" loading={false}>
+        <Button type="primary" htmlType="submit" loading={isLoginPending}>
           로그인
         </Button>
         <Link href="/signup">
