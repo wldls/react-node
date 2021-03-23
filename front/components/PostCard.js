@@ -8,10 +8,10 @@ import {
   MessageOutlined,
   EllipsisOutlined,
 } from "@ant-design/icons";
-// import ButtonGroup from "antd/lib/button/button-group";
 import { useSelector } from "react-redux";
 import PostImages from "../components/PostImages";
 import CommentForm from "../components/CommentForm";
+import PostCardContent from "../components/PostCardContent";
 
 const PostCard = ({ post }) => {
   const { me } = useSelector((state) => state.user); // state.user.me?.id 이런 방식으로 사용 가능
@@ -63,7 +63,7 @@ const PostCard = ({ post }) => {
         <Card.Meta
           avatar={<Avatar>{post.User.nickname[0]}</Avatar>}
           title={post.User.nickname}
-          description={post.content}
+          description={<PostCardContent postData={post.content} />}
         />
       </Card>
       {commentFormOpened && (
