@@ -6,11 +6,11 @@ import { useSelector } from "react-redux";
 import useSelection from "antd/lib/table/hooks/useSelection";
 
 const Home = () => {
-  const { isLoggedIn } = useSelector((state) => state.user);
+  const { data } = useSelector((state) => state.user.login);
   const { mainPosts } = useSelector((state) => state.post);
   return (
     <AppLayout>
-      {isLoggedIn && <PostForm />}
+      {data && <PostForm />}
       {mainPosts.map((post) => (
         <PostCard post={post} key={post.id} />
       ))}

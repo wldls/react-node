@@ -4,7 +4,7 @@ import Link from "next/link";
 import styled from "styled-components";
 import useInput from "../hooks/useInput";
 import { useDispatch, useSelector } from "react-redux";
-import { loginRequestAction } from "../reducers/user";
+import { loginRequestAction } from "../modules/user";
 
 const ButtonWrapper = styled.div`
   margin-top: 10px;
@@ -17,9 +17,9 @@ const FormWrapper = styled(Form)`
 
 const LoginForm = () => {
   const dispatch = useDispatch();
-  const [id, onChangeId] = useInput("");
+  const [email, onChangeEmail] = useInput("");
   const [password, onChangePassword] = useInput("");
-  const { isLoginPending } = useSelector((state) => state.user);
+  const { loading } = useSelector((state) => state.user.login);
 
   // const [id, setId] = useState("");
   // const [password, setPassword] = useState("");
@@ -35,8 +35,8 @@ const LoginForm = () => {
   const onSubmitForm = useCallback(() => {
     // antd에서는 onFinish를 할 경우 e.preventDefault()가 적용되어 있다.
     // setIsLoggedIn(true);
-    dispatch(loginRequestAction({ id, password }));
-  }, [id, password]);
+    dispatch(loginRequestAction({ email, password }));
+  }, [email, password]);
 
   // inline style을 쓰면서 리렌더링이 안되게 캐싱하려면 useMemo 사용
   // const style = useMemo(() => ({ marginTop: 10 }), [])
@@ -44,13 +44,13 @@ const LoginForm = () => {
   return (
     <FormWrapper onFinish={onSubmitForm}>
       <div>
-        <label htmlFor="user-id">아이디</label>
+        <label htmlFor="user-email">이메일</label>
         <br />
         <Input
-          type="text"
-          name="user-id"
-          value={id}
-          onChange={onChangeId}
+          type="email"
+          name="user-email"
+          value={email}
+          onChange={onChangeEmail}
         ></Input>
       </div>
       <div>
@@ -65,7 +65,7 @@ const LoginForm = () => {
         ></Input>
       </div>
       <ButtonWrapper>
-        <Button type="primary" htmlType="submit" loading={isLoginPending}>
+        <Button type="primary" htmlType="submit" loading={loading}>
           로그인
         </Button>
         <Link href="/signup">
