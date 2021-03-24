@@ -27,9 +27,9 @@ const dummyUser = (data) => ({
   ...data,
   nickname: "jiin",
   id: 1,
-  Posts: [],
-  Followings: [],
-  Followers: [],
+  Posts: [{id: 1}],
+  Followings: [{nickname: '민지'}, {nickname: '정몬'}, {nickname: '욘지'}],
+  Followers: [{nickname: '민지'}, {nickname: '정몬'}, {nickname: '욘지'}],
 });
 
 // 로그인
@@ -61,6 +61,9 @@ const CHANGE_NICKNAME = "CHANGE_NICKNAME";
 const CHANGE_NICKNAME_SUCCESS = "CHANGE_NICKNAME_SUCCESS";
 const CHANGE_NICKNAME_ERROR = "CHANGE_NICKNAME_ERROR";
 
+const ADD_POST_MINE = 'ADD_POST_MINE';
+const REMOVE_POST_MINE = 'REMOVE_POST_MINE';
+
 // action creator
 export const changeNickname = (data) => ({
   type: CHANGE_NICKNAME,
@@ -80,6 +83,16 @@ export const signupRequestAction = () => ({
   type: SIGNUP,
   payload: data,
 });
+
+export const addPostMine = (data) => ({
+  type: ADD_POST_MINE,
+  payload: data
+});
+
+export const removePostMine = (data) => ({
+  type: REMOVE_POST_MINE,
+  payload: data
+})
 
 // fork: 비동기 함수호출 -> 결과를 기다리지 않고 다음 코드를 실행
 // call: 동기 함수호출 -> 결과를 기다렸다가 실행
@@ -113,11 +126,14 @@ const reducer = (state = initialState, action) => {
       return handleAsyncActions(LOGIN, "login")(state, action);
     case LOGIN_SUCCESS:
       return {
+        // ...state,
+        // login: {
+        //   ...state.login,
+        //   data: dummyUser(action.payload),
+        // },
         ...state,
-        login: {
-          ...state.login,
-          data: dummyUser(action.payload),
-        },
+        login: reducerUtils.success(action.payload),
+        me: dummyUser(action.payload)
       };
     case LOGIN_ERROR:
       return handleAsyncActions(LOGIN, "login")(state, action);
@@ -136,10 +152,24 @@ const reducer = (state = initialState, action) => {
         state,
         action
       );
-    // return {
-    //   ...state,
-    //   me: action.data,
-    // };
+    case ADD_POST_MINE:
+      return {
+        ...state,
+        me: {
+          ...state.me,
+          Posts: [{id: action.payload}, ...state.me.Posts]
+        }
+      }
+    case REMOVE_POST_MINE:
+      console.log(state.me.Posts, action);
+      const newPost = state.me.Posts.filter(v => v.id !== action.payload);
+      return {
+        ...state,
+        me: {
+          ...state.me,
+          Posts: newPost
+        }
+      }
     default:
       return state;
   }

@@ -5,7 +5,7 @@ import { logoutRequestAction } from "../modules/user";
 
 const UserProfile = () => {
   const dispatch = useDispatch();
-  const { login, logout } = useSelector((state) => state.user);
+  const { me, logout } = useSelector((state) => state.user);
   const onLogout = useCallback(() => {
     dispatch(logoutRequestAction());
   }, []);
@@ -16,23 +16,23 @@ const UserProfile = () => {
         <div key="twit">
           짹짹
           <br />
-          {login.data.Posts.length}
+          {me.Posts.length}
         </div>,
         <div key="followings">
           팔로잉
           <br />
-          {login.data.Followings.length}
+          {me.Followings.length}
         </div>,
         <div key="follower">
           팔로워
           <br />
-          {login.data.Followers.length}
+          {me.Followers.length}
         </div>,
       ]}
     >
       <Card.Meta
-        avatar={<Avatar>{login.data.nickname[0]}</Avatar>}
-        title={login.data.nickname}
+        avatar={<Avatar>{me.nickname[0]}</Avatar>}
+        title={me.nickname}
       />
       <Button onClick={onLogout} loading={logout.loading}>
         로그아웃
