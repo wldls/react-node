@@ -1,57 +1,89 @@
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
 import { takeLatest, put, delay } from "redux-saga/effects";
 import shortId from "shortid";
-import {addPostMine, removePostMine} from './user';
+import { addPostMine, removePostMine } from "./user";
+import produce from "immer";
+import faker from "faker";
+
+// {
+// 	id: 1,
+// 	User: {
+// 		id: 1,
+// 		nickname: "제로초",
+// 	},
+// 	content: "첫 번째 게시글 #해시태그 #익스프레스",
+// 	Images: [
+// 		{
+// 			id: shortId.generate(),
+// 			src:
+// 				"https://bookthumb-phinf.pstatic.net/cover/137/995/13799585.jpg?update=20180726",
+// 		},
+// 		{
+// 			id: shortId.generate(),
+// 			src: "https://gimg.gilbut.co.kr/book/BN001958/rn_view_BN001958.jpg",
+// 		},
+// 		{
+// 			id: shortId.generate(),
+// 			src: "https://gimg.gilbut.co.kr/book/BN001998/rn_view_BN001998.jpg",
+// 		},
+// 	],
+// 	Comments: [
+// 		{
+// 			id: shortId.generate(),
+// 			User: {
+// 				id: shortId.generate(),
+// 				nickname: "nero",
+// 			},
+// 			content: "우와 개정판이 나왔군요~",
+// 		},
+// 		{
+// 			id: shortId.generate(),
+// 			User: {
+// 				id: shortId.generate(),
+// 				nickname: "hero",
+// 			},
+// 			content: "얼른 사고싶어요~",
+// 		},
+// 	],
+// },
 
 const initialState = {
-  mainPosts: [
-    {
-      id: 1,
-      User: {
-        id: 1,
-        nickname: "제로초",
-      },
-      content: "첫 번째 게시글 #해시태그 #익스프레스",
-      Images: [
-        {
-          id: shortId.generate(),
-          src:
-            "https://bookthumb-phinf.pstatic.net/cover/137/995/13799585.jpg?update=20180726",
-        },
-        {
-          id: shortId.generate(),
-          src: "https://gimg.gilbut.co.kr/book/BN001958/rn_view_BN001958.jpg",
-        },
-        {
-          id: shortId.generate(),
-          src: "https://gimg.gilbut.co.kr/book/BN001998/rn_view_BN001998.jpg",
-        },
-      ],
-      Comments: [
-        {
-          id: shortId.generate(),
-          User: {
-            id: shortId.generate(),
-            nickname: "nero",
-          },
-          content: "우와 개정판이 나왔군요~",
-        },
-        {
-          id: shortId.generate(),
-          User: {
-            id: shortId.generate(),
-            nickname: "hero",
-          },
-          content: "얼른 사고싶어요~",
-        },
-      ],
-    },
-  ],
+  mainPosts: [],
   imagePaths: [],
   post: reducerUtils.initial(),
   removePost: reducerUtils.initial(),
   comment: reducerUtils.initial(),
 };
+
+export const generateDummyPost = (number) =>
+  Array(number)
+    .fill()
+    .map((v, i) => ({
+      id: shortId.generate(),
+      User: {
+        id: shortId.generate(),
+        nickname: faker.name.findName(),
+      },
+      content: faker.lorem.paragraph(),
+      Images: [
+        {
+          src: faker.image.imageUrl(),
+        },
+      ],
+      Comments: [
+        {
+          User: {
+            id: shortId.generate(),
+            nickname: faker.name.findName(),
+          },
+          content: faker.lorem.sentence(),
+        },
+      ],
+    }));
+
+const newState = initialState.mainPosts.concat(generateDummyPost(10));
+
+initialState.mainPosts = newState;
 
 const dummyPost = (data) => ({
   id: data.id,
@@ -61,6 +93,7 @@ const dummyPost = (data) => ({
   },
   content: data.content,
   Images: [],
+  Comments: [],
 });
 
 const dummyComment = (data) => ({
@@ -94,11 +127,11 @@ function* addPostSaga(action) {
   try {
     // const result = yield call(addPostAPI, action.data); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
     yield delay(1000);
-    const id =  shortId.generate();
+    const id = shortId.generate();
     yield put({
       type: ADD_POST_SUCCESS,
       // payload: result.data,
-      payload: {id, content: action.payload},
+      payload: { id, content: action.payload },
     });
     yield put(addPostMine(id));
   } catch (error) {
@@ -110,7 +143,7 @@ function* addPostSaga(action) {
   }
 }
 
-function* removePostSaga(action){
+function* removePostSaga(action) {
   try {
     yield delay(1000);
     yield put({
@@ -156,42 +189,35 @@ const reducer = (state = initialState, action) => {
     case ADD_POST:
       return handleAsyncActions(ADD_POST, "post")(state, action);
     case ADD_POST_SUCCESS:
-      return {
-        // ...state,
-        ...state,
-        post: reducerUtils.success(action.payload),
-        mainPosts: [dummyPost(action.payload), ...state.mainPosts],
-      };
+      return produce(state, (draft) => {
+        draft.post = reducerUtils.success(action.payload);
+        draft.mainPosts.unshift(dummyPost(action.payload));
+      });
     case ADD_POST_ERROR:
       return handleAsyncActions(ADD_POST, "post")(state, action);
     case ADD_COMMENT:
       return handleAsyncActions(ADD_POST, "post")(state, action);
     case ADD_COMMENT_SUCCESS:
-      const postIndex = state.mainPosts.findIndex(
-        (v) => v.id === action.payload.postId
-      );
-      const post = state.mainPosts[postIndex];
-      const Comments = [dummyComment(action.payload.content), ...post.Comments];
-      const mainPosts = [...state.mainPosts];
-      mainPosts[postIndex] = { ...post, Comments };
-
-      return {
-        ...state,
-        mainPosts,
-        comment: reducerUtils.success(action.payload),
-      };
+      // 불변성은 지키면서 액션을 통해 이전 상태를 다음 상태로 만들어내는 함수
+      return produce(state, (draft) => {
+        const post = draft.mainPosts.find(
+          (v) => v.id === action.payload.postId
+        );
+        draft.comment = reducerUtils.success(action.payload);
+        post.Comments.unshift(dummyComment(action.payload.content));
+      });
     case ADD_COMMENT_ERROR:
       return handleAsyncActions(ADD_COMMENT, "comment")(state, action);
     case REMOVE_POST:
-      return handleAsyncActions(REMOVE_POST, 'post')(state, action);
+      return handleAsyncActions(REMOVE_POST, "post")(state, action);
     case REMOVE_POST_SUCCESS:
-      const newPosts = state.mainPosts.filter(v => v.id !== action.payload)
+      const newPosts = state.mainPosts.filter((v) => v.id !== action.payload);
       return {
         ...state,
-        mainPosts: newPosts
-      }
+        mainPosts: newPosts,
+      };
     case REMOVE_POST_ERROR:
-      return handleAsyncActions(REMOVE_POST, 'removePost')(state, action);
+      return handleAsyncActions(REMOVE_POST, "removePost")(state, action);
     default:
       return state;
   }

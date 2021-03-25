@@ -5,20 +5,21 @@ import {
   handleAsyncActions,
 } from "../lib/asyncUtils";
 import * as user from "../api/user";
+import produce from "immer";
 
 export const initialState = {
   login: reducerUtils.initial(),
   logout: reducerUtils.initial(),
   signup: reducerUtils.initial(),
   changeNickname: reducerUtils.initial(),
-  // me: null,
-  me: {
-    nickname: "jiin",
-    id: 1,
-    Posts: [],
-    Followings: [],
-    Followers: [],
-  },
+  me: null,
+  // me: {
+  //   nickname: "jiin",
+  //   id: 1,
+  //   Posts: [],
+  //   Followings: [],
+  //   Followers: [],
+  // },
   signUpData: {},
   loginData: {},
 };
@@ -27,9 +28,13 @@ const dummyUser = (data) => ({
   ...data,
   nickname: "jiin",
   id: 1,
-  Posts: [{id: 1}],
-  Followings: [{nickname: '민지'}, {nickname: '정몬'}, {nickname: '욘지'}],
-  Followers: [{nickname: '민지'}, {nickname: '정몬'}, {nickname: '욘지'}],
+  Posts: [{ id: 1 }],
+  Followings: [
+    { nickname: "민지" },
+    { nickname: "정몬" },
+    { nickname: "욘지" },
+  ],
+  Followers: [{ nickname: "민지" }, { nickname: "정몬" }, { nickname: "욘지" }],
 });
 
 // 로그인
@@ -61,8 +66,8 @@ const CHANGE_NICKNAME = "CHANGE_NICKNAME";
 const CHANGE_NICKNAME_SUCCESS = "CHANGE_NICKNAME_SUCCESS";
 const CHANGE_NICKNAME_ERROR = "CHANGE_NICKNAME_ERROR";
 
-const ADD_POST_MINE = 'ADD_POST_MINE';
-const REMOVE_POST_MINE = 'REMOVE_POST_MINE';
+const ADD_POST_MINE = "ADD_POST_MINE";
+const REMOVE_POST_MINE = "REMOVE_POST_MINE";
 
 // action creator
 export const changeNickname = (data) => ({
@@ -86,13 +91,13 @@ export const signupRequestAction = () => ({
 
 export const addPostMine = (data) => ({
   type: ADD_POST_MINE,
-  payload: data
+  payload: data,
 });
 
 export const removePostMine = (data) => ({
   type: REMOVE_POST_MINE,
-  payload: data
-})
+  payload: data,
+});
 
 // fork: 비동기 함수호출 -> 결과를 기다리지 않고 다음 코드를 실행
 // call: 동기 함수호출 -> 결과를 기다렸다가 실행
@@ -126,14 +131,9 @@ const reducer = (state = initialState, action) => {
       return handleAsyncActions(LOGIN, "login")(state, action);
     case LOGIN_SUCCESS:
       return {
-        // ...state,
-        // login: {
-        //   ...state.login,
-        //   data: dummyUser(action.payload),
-        // },
         ...state,
         login: reducerUtils.success(action.payload),
-        me: dummyUser(action.payload)
+        me: dummyUser(action.payload),
       };
     case LOGIN_ERROR:
       return handleAsyncActions(LOGIN, "login")(state, action);
@@ -153,23 +153,14 @@ const reducer = (state = initialState, action) => {
         action
       );
     case ADD_POST_MINE:
-      return {
-        ...state,
-        me: {
-          ...state.me,
-          Posts: [{id: action.payload}, ...state.me.Posts]
-        }
-      }
+      return produce(state, (draft) => {
+        draft.me.Posts.unshift({ id: action.payload });
+      });
     case REMOVE_POST_MINE:
-      console.log(state.me.Posts, action);
-      const newPost = state.me.Posts.filter(v => v.id !== action.payload);
-      return {
-        ...state,
-        me: {
-          ...state.me,
-          Posts: newPost
-        }
-      }
+      const newPost = state.me.Posts.filter((v) => v.id !== action.payload);
+      return produce(state, (draft) => {
+        draft.me.Posts = newPost;
+      });
     default:
       return state;
   }

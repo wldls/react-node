@@ -12,13 +12,13 @@ import { useDispatch, useSelector } from "react-redux";
 import PostImages from "../components/PostImages";
 import CommentForm from "../components/CommentForm";
 import PostCardContent from "../components/PostCardContent";
-import {removePost} from '../modules/post';
+import { removePost } from "../modules/post";
 
 const PostCard = ({ post }) => {
   const dispatch = useDispatch();
   const { me } = useSelector((state) => state.user); // state.user.me?.id 이런 방식으로 사용 가능
   const id = me?.id; // 옵셔널 체이닝(optional chaining) 연산자 : me && me.id 와 동일하다.
-  const {loading} = useSelector(state => state.post.removePost)
+  const { loading } = useSelector((state) => state.post.removePost);
   const [liked, setLiked] = useState(false);
   const [commentFormOpened, setCommentFormOpened] = useState(false);
   const onToggleLike = useCallback(() => {
@@ -29,10 +29,10 @@ const PostCard = ({ post }) => {
   }, []);
   const onRemovePost = useCallback(() => {
     dispatch(removePost(post.id));
-  }, [])
+  }, []);
 
   return (
-    <div style={{ marginButtom: 20 }}>
+    <div style={{ marginBottom: 20 }}>
       <Card
         cover={post.Images[0] && <PostImages images={post.Images} />}
         actions={[
@@ -54,7 +54,13 @@ const PostCard = ({ post }) => {
                 {id && post.User.id === id ? (
                   <>
                     <Button>수정</Button>
-                    <Button type="danger" loading={loading} onClick={onRemovePost}>삭제</Button>
+                    <Button
+                      type="danger"
+                      loading={loading}
+                      onClick={onRemovePost}
+                    >
+                      삭제
+                    </Button>
                   </>
                 ) : (
                   <Button>신고</Button>
