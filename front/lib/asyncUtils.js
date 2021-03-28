@@ -43,7 +43,7 @@ export const reducerUtils = {
 
 // 비동기 액션을 처리하는 리듀서 생성
 export const handleAsyncActions = (type, key) => {
-  const [SUCCESS, ERROR] = [`${type}_SUCCESS, ${type}_ERROR`];
+  const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
   return (state, action) => {
     switch (action.type) {
       case type:

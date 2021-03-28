@@ -13,6 +13,7 @@ import PostImages from "../components/PostImages";
 import CommentForm from "../components/CommentForm";
 import PostCardContent from "../components/PostCardContent";
 import { removePost } from "../modules/post";
+import FollowButton from "./FollowButton";
 
 const PostCard = ({ post }) => {
   const dispatch = useDispatch();
@@ -71,6 +72,7 @@ const PostCard = ({ post }) => {
             <EllipsisOutlined />
           </Popover>,
         ]}
+        extra={me && <FollowButton post={post} />}
       >
         <Card.Meta
           avatar={<Avatar>{post.User.nickname[0]}</Avatar>}

@@ -1,5 +1,5 @@
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
-import { takeLatest, put, delay } from "redux-saga/effects";
+import { takeLatest, put, delay, throttle } from "redux-saga/effects";
 import shortId from "shortid";
 import { addPostMine, removePostMine } from "./user";
 import produce from "immer";
@@ -50,6 +50,8 @@ import faker from "faker";
 const initialState = {
   mainPosts: [],
   imagePaths: [],
+  hasMorePosts: true,
+  reqPost: reducerUtils.initial(),
   post: reducerUtils.initial(),
   removePost: reducerUtils.initial(),
   comment: reducerUtils.initial(),
@@ -67,7 +69,7 @@ export const generateDummyPost = (number) =>
       content: faker.lorem.paragraph(),
       Images: [
         {
-          src: faker.image.imageUrl(),
+          src: faker.image.image(),
         },
       ],
       Comments: [
@@ -80,10 +82,6 @@ export const generateDummyPost = (number) =>
         },
       ],
     }));
-
-const newState = initialState.mainPosts.concat(generateDummyPost(10));
-
-initialState.mainPosts = newState;
 
 const dummyPost = (data) => ({
   id: data.id,
@@ -103,6 +101,10 @@ const dummyComment = (data) => ({
 });
 
 // 게시글 작성 액션
+const LOAD_POST = "LOAD_POST";
+const LOAD_POST_SUCCESS = "LOAD_POST_SUCCESS";
+const LOAD_POST_ERROR = "LOAD_POST_ERROR";
+
 const ADD_POST = "ADD_POST";
 const ADD_POST_SUCCESS = "ADD_POST_SUCCESS";
 const ADD_POST_ERROR = "ADD_POST_ERROR";
@@ -115,6 +117,7 @@ const ADD_COMMENT = "ADD_COMMENT";
 const ADD_COMMENT_SUCCESS = "ADD_COMMENT_SUCCESS";
 const ADD_COMMENT_ERROR = "ADD_COMMENT_ERROR";
 
+export const loadPost = () => ({ type: LOAD_POST });
 export const addPost = (data) => ({ type: ADD_POST, payload: data });
 export const removePost = (data) => ({ type: REMOVE_POST, payload: data });
 
@@ -122,6 +125,23 @@ export const addComment = (data) => ({
   type: ADD_COMMENT,
   payload: data,
 });
+
+function* loadPostSaga(action) {
+  try {
+    // const result = yield call(loadPostAPI, action.data); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
+    yield delay(1000);
+    yield put({
+      type: LOAD_POST_SUCCESS,
+      payload: generateDummyPost(10),
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: LOAD_POST_ERROR,
+      payload: error,
+    });
+  }
+}
 
 function* addPostSaga(action) {
   try {
@@ -178,6 +198,7 @@ function* addCommentSaga(action) {
 }
 
 export function* postSaga() {
+  yield takeLatest(LOAD_POST, loadPostSaga);
   yield takeLatest(ADD_POST, addPostSaga);
   yield takeLatest(REMOVE_POST, removePostSaga);
   yield takeLatest(ADD_COMMENT, addCommentSaga);
@@ -186,6 +207,17 @@ export function* postSaga() {
 // (이전상태 ,액션) => 다음상태
 const reducer = (state = initialState, action) => {
   switch (action.type) {
+    case LOAD_POST:
+      return handleAsyncActions(LOAD_POST, "reqPost")(state, action);
+    case LOAD_POST_SUCCESS:
+      return {
+        ...state,
+        reqPost: reducerUtils.success(action.payload),
+        mainPosts: action.payload.concat(state.mainPosts),
+        hasMorePosts: state.mainPosts.length < 50,
+      };
+    case LOAD_POST_ERROR:
+      return handleAsyncActions(LOAD_POST, "reqPost")(state, action);
     case ADD_POST:
       return handleAsyncActions(ADD_POST, "post")(state, action);
     case ADD_POST_SUCCESS:

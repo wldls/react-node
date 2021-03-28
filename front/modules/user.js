@@ -11,6 +11,8 @@ export const initialState = {
   login: reducerUtils.initial(),
   logout: reducerUtils.initial(),
   signup: reducerUtils.initial(),
+  follow: reducerUtils.initial(),
+  unFollow: reducerUtils.initial(),
   changeNickname: reducerUtils.initial(),
   me: null,
   // me: {
@@ -53,12 +55,12 @@ const SIGNUP_SUCCESS = "SIGNUP_SUCCESS";
 const SIGNUP_ERROR = "SIGNUP_ERROR";
 
 // 팔로우
-const FOLLOW_REQUEST = "FOLLOW_REQUEST";
+const FOLLOW = "FOLLOW";
 const FOLLOW_SUCCESS = "FOLLOW_SUCCESS";
 const FOLLOW_ERROR = "FOLLOW_ERROR";
 
 // 언팔로우
-const UNFOLLOW_REQUEST = "UNFOLLOW_REQUEST";
+const UNFOLLOW = "UNFOLLOW";
 const UNFOLLOW_SUCCESS = "UNFOLLOW_SUCCESS";
 const UNFOLLOW_ERROR = "UNFOLLOW_ERROR";
 
@@ -70,33 +72,43 @@ const ADD_POST_MINE = "ADD_POST_MINE";
 const REMOVE_POST_MINE = "REMOVE_POST_MINE";
 
 // action creator
-export const changeNickname = (data) => ({
+export const changeNickname = (payload) => ({
   type: CHANGE_NICKNAME,
-  payload: data,
+  payload,
 });
 
-export const loginRequestAction = (data) => ({
+export const loginRequestAction = (payload) => ({
   type: LOGIN,
-  payload: data,
+  payload,
 });
 
 export const logoutRequestAction = () => ({
   type: LOGOUT,
 });
 
-export const signupRequestAction = () => ({
+export const signupRequestAction = (payload) => ({
   type: SIGNUP,
-  payload: data,
+  payload,
 });
 
-export const addPostMine = (data) => ({
+export const addPostMine = (payload) => ({
   type: ADD_POST_MINE,
-  payload: data,
+  payload,
 });
 
-export const removePostMine = (data) => ({
+export const removePostMine = (payload) => ({
   type: REMOVE_POST_MINE,
-  payload: data,
+  payload,
+});
+
+export const followAction = (payload) => ({
+  type: FOLLOW,
+  payload,
+});
+
+export const unFollowAction = (payload) => ({
+  type: UNFOLLOW,
+  payload,
 });
 
 // fork: 비동기 함수호출 -> 결과를 기다리지 않고 다음 코드를 실행
@@ -118,11 +130,45 @@ function* loginSaga(action) {
   }
 }
 
+function* followingSaga(action) {
+  try {
+    yield delay(1000);
+    yield put({
+      type: FOLLOW_SUCCESS,
+      payload: action.payload,
+    });
+  } catch (e) {
+    console.log(e);
+    yield put({
+      type: FOLLOW_ERROR,
+      payload: e,
+    });
+  }
+}
+
+function* unFollowingSaga(action) {
+  try {
+    yield delay(1000);
+    yield put({
+      type: UNFOLLOW_SUCCESS,
+      payload: action.payload,
+    });
+  } catch (e) {
+    console.log(e);
+    yield put({
+      type: UNFOLLOW_ERROR,
+      payload: e,
+    });
+  }
+}
+
 const logoutSaga = createPromiseSaga(LOGOUT, user.logoutAPI);
 
 export function* userSaga() {
   yield takeLatest(LOGIN, loginSaga);
   yield takeLatest(LOGOUT, logoutSaga);
+  yield takeLatest(FOLLOW, followingSaga);
+  yield takeLatest(UNFOLLOW, unFollowingSaga);
 }
 
 const reducer = (state = initialState, action) => {
@@ -161,6 +207,24 @@ const reducer = (state = initialState, action) => {
       return produce(state, (draft) => {
         draft.me.Posts = newPost;
       });
+    case FOLLOW_SUCCESS:
+      return produce(state, (draft) => {
+        draft.me.Followings.push({ id: action.payload });
+        draft.follow = reducerUtils.success(null);
+      });
+    case FOLLOW:
+    case FOLLOW_ERROR:
+      return handleAsyncActions(FOLLOW, "follow")(state, action);
+    case UNFOLLOW_SUCCESS:
+      return produce(state, (draft) => {
+        draft.me.Followings = draft.me.Followings.filter(
+          (v) => v.id !== action.payload
+        );
+        draft.unFollow = reducerUtils.success(null);
+      });
+    case UNFOLLOW:
+    case UNFOLLOW_ERROR:
+      return handleAsyncActions(UNFOLLOW, "unFollow")(state, action);
     default:
       return state;
   }
