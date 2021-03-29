@@ -1,10 +1,10 @@
-import { takeLatest, put, delay } from "redux-saga/effects";
+import { takeLatest, put, call, delay } from "redux-saga/effects";
 import {
   createPromiseSaga,
   reducerUtils,
   handleAsyncActions,
 } from "../lib/asyncUtils";
-import * as user from "../api/user";
+import * as userAPI from "../api/user";
 import produce from "immer";
 
 export const initialState = {
@@ -86,7 +86,7 @@ export const logoutRequestAction = () => ({
   type: LOGOUT,
 });
 
-export const signupRequestAction = (payload) => ({
+export const signupAction = (payload) => ({
   type: SIGNUP,
   payload,
 });
@@ -110,6 +110,24 @@ export const unFollowAction = (payload) => ({
   type: UNFOLLOW,
   payload,
 });
+
+function* signupSaga(action) {
+  console.log(action.payload);
+  try {
+    const result = yield call(userAPI.signup, action.payload);
+    console.log(result);
+    yield put({
+      type: SIGNUP_SUCCESS,
+      // payload: result,
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: SIGNUP_ERROR,
+      error,
+    });
+  }
+}
 
 // fork: 비동기 함수호출 -> 결과를 기다리지 않고 다음 코드를 실행
 // call: 동기 함수호출 -> 결과를 기다렸다가 실행
@@ -162,9 +180,10 @@ function* unFollowingSaga(action) {
   }
 }
 
-const logoutSaga = createPromiseSaga(LOGOUT, user.logoutAPI);
+const logoutSaga = createPromiseSaga(LOGOUT, userAPI.logout);
 
 export function* userSaga() {
+  yield takeLatest(SIGNUP, signupSaga);
   yield takeLatest(LOGIN, loginSaga);
   yield takeLatest(LOGOUT, logoutSaga);
   yield takeLatest(FOLLOW, followingSaga);

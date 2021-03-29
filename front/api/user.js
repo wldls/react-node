@@ -1,5 +1,6 @@
 import axios from "axios";
 // import client from "./index";
 
-export const loginAPI = (data) => axios.post("/api/login", data);
-export const logoutAPI = () => axios.post("/api/logout");
+export const login = (data) => axios.post("/api/login", data);
+export const logout = () => axios.post("/api/logout");
+export const signup = (payload) => axios.post("/user", payload);

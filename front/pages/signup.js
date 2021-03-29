@@ -5,6 +5,7 @@ import AppLayout from "../components/AppLayout";
 import { Form, Input, Checkbox, Button } from "antd";
 import useinput from "../hooks/useInput";
 import { useDispatch, useSelector } from "react-redux";
+import { signupAction } from "../modules/user";
 
 const ErrorMessage = styled.div`
   color: red;
@@ -41,10 +42,7 @@ const Signup = () => {
     if (!term) {
       return setTermError(true);
     }
-    dispatch({
-      type: SIGNUP,
-      data: { email, password, nickname },
-    });
+    dispatch(signupAction({ email, password, nickname }));
   }, [password, passwordCheck, term]);
 
   return (
