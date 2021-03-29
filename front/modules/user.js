@@ -53,6 +53,7 @@ const LOGOUT_ERROR = "LOGOUT_ERROR";
 const SIGNUP = "SIGNUP";
 const SIGNUP_SUCCESS = "SIGNUP_SUCCESS";
 const SIGNUP_ERROR = "SIGNUP_ERROR";
+const SIGNUP_RESET = "SIGNUP_RESET";
 
 // 팔로우
 const FOLLOW = "FOLLOW";
@@ -91,6 +92,10 @@ export const signupAction = (payload) => ({
   payload,
 });
 
+export const signupReset = () => ({
+  type: SIGNUP_RESET,
+});
+
 export const addPostMine = (payload) => ({
   type: ADD_POST_MINE,
   payload,
@@ -112,19 +117,16 @@ export const unFollowAction = (payload) => ({
 });
 
 function* signupSaga(action) {
-  console.log(action.payload);
   try {
     const result = yield call(userAPI.signup, action.payload);
-    console.log(result);
     yield put({
       type: SIGNUP_SUCCESS,
-      // payload: result,
+      payload: result,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: SIGNUP_ERROR,
-      error,
+      error: error.response.data,
     });
   }
 }
@@ -133,17 +135,16 @@ function* signupSaga(action) {
 // call: 동기 함수호출 -> 결과를 기다렸다가 실행
 function* loginSaga(action) {
   try {
-    // const result = yield call(loginAPI, action.data); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
-    yield delay(1000);
+    const result = yield call(userAPI.login, action.data); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
     yield put({
       type: LOGIN_SUCCESS,
-      payload: { ...action.payload, nickname: "jiin" },
+      // payload: { ...action.payload, nickname: "jiin" },
+      payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: LOGIN_ERROR,
-      payload: error,
+      payload: error.response.data,
     });
   }
 }
@@ -210,6 +211,11 @@ const reducer = (state = initialState, action) => {
     case SIGNUP_SUCCESS:
     case SIGNUP_ERROR:
       return handleAsyncActions(SIGNUP, "signup")(state, action);
+    case SIGNUP_RESET:
+      return {
+        ...state,
+        signup: reducerUtils.initial(),
+      };
     case CHANGE_NICKNAME:
     case CHANGE_NICKNAME_SUCCESS:
     case CHANGE_NICKNAME_ERROR:

@@ -45,7 +45,6 @@ export const reducerUtils = {
 export const handleAsyncActions = (type, key) => {
   const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
   return (state, action) => {
-    console.log(action);
     switch (action.type) {
       case type:
         return {
@@ -60,7 +59,7 @@ export const handleAsyncActions = (type, key) => {
       case ERROR:
         return {
           ...state,
-          [key]: reducerUtils.error(aciton.error),
+          [key]: reducerUtils.error(action.error),
         };
       default:
         return state;

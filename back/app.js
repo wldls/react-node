@@ -1,8 +1,10 @@
 // import express from "express";
 const express = require("express");
+const cors = require("cors");
 const postRouter = require("./routes/post");
 const userRouter = require("./routes/user");
 const db = require("./models");
+const passportConfig = require("./passport");
 const app = express();
 
 db.sequelize
@@ -12,6 +14,15 @@ db.sequelize
   })
   .catch(console.error);
 
+passportConfig();
+
+// 모든 요청에 cors 처리
+app.use(
+  cors({
+    origin: "*",
+    credentials: false,
+  })
+);
 // front에서 받은 데이터를 req.body 안에 넣어줌 반드시 맨위에 선언되어야 한다.
 app.use(express.json()); // json형식의 데이터를 넣어줌
 app.use(express.urlencoded({ extended: true })); // form submit 데이터를 넣어줌
