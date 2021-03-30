@@ -26,8 +26,8 @@ passportConfig();
 // 모든 요청에 cors 처리
 app.use(
   cors({
-    origin: "*",
-    credentials: false,
+    origin: "http://localhost:3000",
+    credentials: true, // 쿠키도 같이 전달
   })
 );
 // front에서 받은 데이터를 req.body 안에 넣어줌 반드시 맨위에 선언되어야 한다.

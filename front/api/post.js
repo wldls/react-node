@@ -1,6 +1,7 @@
-import axios from "axios";
-// import client from "./index";
+import client from "./index";
 
-export const addPostAPI = (data) => axios.post("/api/addPost", data);
-export const addCommentAPI = (data) =>
-  axios.post(`/api/post/${data.postId}/comment`, data);
+export const addPost = (data) => client.post("/post", { content: data });
+
+// POST /post/1/comment
+export const addComment = (data) =>
+  client.post(`/post/${data.postId}/comment`, data); // 서버에 쿠키 전달

@@ -7,7 +7,7 @@ import { loadPost } from "../modules/post";
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { me } = useSelector((state) => state.user.login);
+  const { login } = useSelector((state) => state.user);
   const { mainPosts, hasMorePosts, reqPost } = useSelector(
     (state) => state.post
   );
@@ -38,7 +38,7 @@ const Home = () => {
 
   return (
     <AppLayout>
-      {me && <PostForm />}
+      {login.data && <PostForm />}
       {mainPosts.map((post) => (
         <PostCard post={post} key={post.id} />
       ))}

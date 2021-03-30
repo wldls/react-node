@@ -1,51 +1,10 @@
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
-import { takeLatest, put, delay, throttle } from "redux-saga/effects";
+import { takeLatest, put, delay, call } from "redux-saga/effects";
 import shortId from "shortid";
 import { addPostMine, removePostMine } from "./user";
 import produce from "immer";
 import faker from "faker";
-
-// {
-// 	id: 1,
-// 	User: {
-// 		id: 1,
-// 		nickname: "제로초",
-// 	},
-// 	content: "첫 번째 게시글 #해시태그 #익스프레스",
-// 	Images: [
-// 		{
-// 			id: shortId.generate(),
-// 			src:
-// 				"https://bookthumb-phinf.pstatic.net/cover/137/995/13799585.jpg?update=20180726",
-// 		},
-// 		{
-// 			id: shortId.generate(),
-// 			src: "https://gimg.gilbut.co.kr/book/BN001958/rn_view_BN001958.jpg",
-// 		},
-// 		{
-// 			id: shortId.generate(),
-// 			src: "https://gimg.gilbut.co.kr/book/BN001998/rn_view_BN001998.jpg",
-// 		},
-// 	],
-// 	Comments: [
-// 		{
-// 			id: shortId.generate(),
-// 			User: {
-// 				id: shortId.generate(),
-// 				nickname: "nero",
-// 			},
-// 			content: "우와 개정판이 나왔군요~",
-// 		},
-// 		{
-// 			id: shortId.generate(),
-// 			User: {
-// 				id: shortId.generate(),
-// 				nickname: "hero",
-// 			},
-// 			content: "얼른 사고싶어요~",
-// 		},
-// 	],
-// },
+import * as postAPI from "../api/post";
 
 const initialState = {
   mainPosts: [],
@@ -83,16 +42,16 @@ export const generateDummyPost = (number) =>
       ],
     }));
 
-const dummyPost = (data) => ({
-  id: data.id,
-  User: {
-    id: 1,
-    nickname: "제로초",
-  },
-  content: data.content,
-  Images: [],
-  Comments: [],
-});
+// const dummyPost = (data) => ({
+//   id: data.id,
+//   User: {
+//     id: 1,
+//     nickname: "제로초",
+//   },
+//   content: data.content,
+//   Images: [],
+//   Comments: [],
+// });
 
 const dummyComment = (data) => ({
   id: shortId.generate(),
@@ -118,12 +77,12 @@ const ADD_COMMENT_SUCCESS = "ADD_COMMENT_SUCCESS";
 const ADD_COMMENT_ERROR = "ADD_COMMENT_ERROR";
 
 export const loadPost = () => ({ type: LOAD_POST });
-export const addPost = (data) => ({ type: ADD_POST, payload: data });
-export const removePost = (data) => ({ type: REMOVE_POST, payload: data });
+export const addPost = (payload) => ({ type: ADD_POST, payload });
+export const removePost = (payload) => ({ type: REMOVE_POST, payload });
 
-export const addComment = (data) => ({
+export const addComment = (payload) => ({
   type: ADD_COMMENT,
-  payload: data,
+  payload,
 });
 
 function* loadPostSaga(action) {
@@ -145,15 +104,13 @@ function* loadPostSaga(action) {
 
 function* addPostSaga(action) {
   try {
-    // const result = yield call(addPostAPI, action.data); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
-    yield delay(1000);
-    const id = shortId.generate();
+    const result = yield call(postAPI.addPost, action.payload);
+    // const id = shortId.generate();
     yield put({
       type: ADD_POST_SUCCESS,
-      // payload: result.data,
-      payload: { id, content: action.payload },
+      payload: result.data,
     });
-    yield put(addPostMine(id));
+    yield put(addPostMine(result.data.id));
   } catch (error) {
     console.log(error);
     yield put({
@@ -182,11 +139,10 @@ function* removePostSaga(action) {
 
 function* addCommentSaga(action) {
   try {
-    // const result = yield call(addPostAPI, action.data); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
-    yield delay(1000);
+    const result = yield call(postAPI.addComment, action.payload); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
     yield put({
       type: ADD_COMMENT_SUCCESS,
-      payload: action.payload,
+      payload: result.data,
     });
   } catch (error) {
     console.log(error);
@@ -223,7 +179,7 @@ const reducer = (state = initialState, action) => {
     case ADD_POST_SUCCESS:
       return produce(state, (draft) => {
         draft.post = reducerUtils.success(action.payload);
-        draft.mainPosts.unshift(dummyPost(action.payload));
+        draft.mainPosts.unshift(action.payload);
       });
     case ADD_POST_ERROR:
       return handleAsyncActions(ADD_POST, "post")(state, action);
@@ -233,10 +189,10 @@ const reducer = (state = initialState, action) => {
       // 불변성은 지키면서 액션을 통해 이전 상태를 다음 상태로 만들어내는 함수
       return produce(state, (draft) => {
         const post = draft.mainPosts.find(
-          (v) => v.id === action.payload.postId
+          (v) => v.id === action.payload.PostId
         );
         draft.comment = reducerUtils.success(action.payload);
-        post.Comments.unshift(dummyComment(action.payload.content));
+        post.Comments.unshift(action.payload);
       });
     case ADD_COMMENT_ERROR:
       return handleAsyncActions(ADD_COMMENT, "comment")(state, action);
