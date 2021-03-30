@@ -1,9 +1,39 @@
 const express = require("express");
 const bcrypt = require("bcrypt"); // 비밀번호 암호화 라이브러리
-const router = express.Router();
 const passport = require("passport");
 const { Post, User } = require("../models");
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
+
+const router = express.Router();
+
+// GET /user
+router.get("/", async (req, res, next) => {
+  try {
+    if (req.user) {
+      const fullUserWithoutPassword = await User.findOne({
+        where: { id: req.user.id },
+        attributes: {
+          exclude: ["password"],
+        },
+        include: [
+          {
+            model: Post,
+            attributes: ["id"],
+          },
+          { model: User, as: "Followings", attributes: ["id"] },
+          { model: User, as: "Followers", attributes: ["id"] },
+        ],
+      });
+
+      res.status(200).json(fullUserWithoutPassword);
+    } else {
+      res.status(200).json(null);
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 // 로그인 시도시 passport를 사용해서 전략 실행
 router.post("/login", isNotLoggedIn, (req, res, next) => {

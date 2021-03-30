@@ -4,15 +4,17 @@ import PostForm from "../components/PostForm";
 import PostCard from "../components/PostCard";
 import { useDispatch, useSelector } from "react-redux";
 import { loadPost } from "../modules/post";
+import { loadMyinfo } from "../modules/user";
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { login } = useSelector((state) => state.user);
+  const { me } = useSelector((state) => state.user);
   const { mainPosts, hasMorePosts, reqPost } = useSelector(
     (state) => state.post
   );
 
   useEffect(() => {
+    dispatch(loadMyinfo());
     dispatch(loadPost());
   }, []);
 
@@ -38,7 +40,7 @@ const Home = () => {
 
   return (
     <AppLayout>
-      {login.data && <PostForm />}
+      {me && <PostForm />}
       {mainPosts.map((post) => (
         <PostCard post={post} key={post.id} />
       ))}

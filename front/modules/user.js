@@ -14,6 +14,7 @@ export const initialState = {
   follow: reducerUtils.initial(),
   unFollow: reducerUtils.initial(),
   changeNickname: reducerUtils.initial(),
+  myinfo: reducerUtils.initial(),
   me: null,
   // me: {
   //   nickname: "jiin",
@@ -38,6 +39,11 @@ const dummyUser = (data) => ({
   ],
   Followers: [{ nickname: "민지" }, { nickname: "정몬" }, { nickname: "욘지" }],
 });
+
+// 로그인 유지
+const LOAD_MYINFO = "LOAD_MYINFO";
+const LOAD_MYINFO_SUCCESS = "LOAD_MYINFO_SUCCESS";
+const LOAD_MYINFO_ERROR = "LOAD_MYINFO_ERROR";
 
 // 로그인
 const LOGIN = "LOGIN";
@@ -73,6 +79,10 @@ const ADD_POST_MINE = "ADD_POST_MINE";
 const REMOVE_POST_MINE = "REMOVE_POST_MINE";
 
 // action creator
+export const loadMyinfo = () => ({
+  type: LOAD_MYINFO,
+});
+
 export const changeNickname = (payload) => ({
   type: CHANGE_NICKNAME,
   payload,
@@ -126,6 +136,22 @@ function* signupSaga(action) {
   } catch (error) {
     yield put({
       type: SIGNUP_ERROR,
+      error: error.response.data,
+    });
+  }
+}
+
+function* loadMyinfoSata() {
+  try {
+    const result = yield call(userAPI.myinfo);
+    yield put({
+      type: LOAD_MYINFO_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: LOAD_MYINFO_ERROR,
       error: error.response.data,
     });
   }
@@ -198,6 +224,7 @@ function* unFollowingSaga(action) {
 }
 
 export function* userSaga() {
+  yield takeLatest(LOAD_MYINFO, loadMyinfoSata);
   yield takeLatest(SIGNUP, signupSaga);
   yield takeLatest(LOGIN, loginSaga);
   yield takeLatest(LOGOUT, logoutSaga);
@@ -207,6 +234,15 @@ export function* userSaga() {
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
+    case LOAD_MYINFO_SUCCESS:
+      return {
+        ...state,
+        myinfo: reducerUtils.success(action.payload),
+        me: action.payload,
+      };
+    case LOAD_MYINFO:
+    case LOAD_MYINFO_ERROR:
+      return handleAsyncActions(LOAD_MYINFO, "myinfo")(state, action);
     case LOGIN:
       return handleAsyncActions(LOGIN, "login")(state, action);
     case LOGIN_SUCCESS:
