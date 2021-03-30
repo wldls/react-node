@@ -135,16 +135,32 @@ function* signupSaga(action) {
 // call: 동기 함수호출 -> 결과를 기다렸다가 실행
 function* loginSaga(action) {
   try {
-    const result = yield call(userAPI.login, action.data); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
+    const result = yield call(userAPI.login, action.payload); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
     yield put({
       type: LOGIN_SUCCESS,
       // payload: { ...action.payload, nickname: "jiin" },
       payload: result.data,
     });
   } catch (error) {
+    console.log(error.response);
     yield put({
       type: LOGIN_ERROR,
-      payload: error.response.data,
+      error: error.response.data,
+    });
+  }
+}
+
+function* logoutSaga() {
+  try {
+    yield call(userAPI.logout);
+    yield put({
+      type: LOGOUT_SUCCESS,
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: LOGOUT_ERROR,
+      error: error.response.data,
     });
   }
 }
@@ -181,8 +197,6 @@ function* unFollowingSaga(action) {
   }
 }
 
-const logoutSaga = createPromiseSaga(LOGOUT, userAPI.logout);
-
 export function* userSaga() {
   yield takeLatest(SIGNUP, signupSaga);
   yield takeLatest(LOGIN, loginSaga);
@@ -199,12 +213,18 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         login: reducerUtils.success(action.payload),
-        me: dummyUser(action.payload),
+        me: action.payload,
       };
     case LOGIN_ERROR:
       return handleAsyncActions(LOGIN, "login")(state, action);
-    case LOGOUT:
     case LOGOUT_SUCCESS:
+      return {
+        ...state,
+        logout: reducerUtils.success(action.payload),
+        login: reducerUtils.initial(),
+        me: null,
+      };
+    case LOGOUT:
     case LOGOUT_ERROR:
       return handleAsyncActions(LOGOUT, "logout")(state, action);
     case SIGNUP:

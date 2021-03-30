@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Form, Input, Button } from "antd";
 import Link from "next/link";
 import styled from "styled-components";
@@ -19,7 +19,7 @@ const LoginForm = () => {
   const dispatch = useDispatch();
   const [email, onChangeEmail] = useInput("");
   const [password, onChangePassword] = useInput("");
-  const { loading } = useSelector((state) => state.user.login);
+  const { loading, error } = useSelector((state) => state.user.login);
 
   // const [id, setId] = useState("");
   // const [password, setPassword] = useState("");
@@ -31,6 +31,12 @@ const LoginForm = () => {
   // const onChangePassword = useCallback((e) => {
   //   setPassword(e.target.value);
   // }, []);
+
+  useEffect(() => {
+    if (error) {
+      alert(error);
+    }
+  }, [error]);
 
   const onSubmitForm = useCallback(() => {
     // antd에서는 onFinish를 할 경우 e.preventDefault()가 적용되어 있다.

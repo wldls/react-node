@@ -1,10 +1,17 @@
 // import express from "express";
 const express = require("express");
 const cors = require("cors");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+const passport = require("passport");
+const dotenv = require("dotenv");
+
 const postRouter = require("./routes/post");
 const userRouter = require("./routes/user");
 const db = require("./models");
 const passportConfig = require("./passport");
+
+dotenv.config();
 const app = express();
 
 db.sequelize
@@ -26,6 +33,17 @@ app.use(
 // front에서 받은 데이터를 req.body 안에 넣어줌 반드시 맨위에 선언되어야 한다.
 app.use(express.json()); // json형식의 데이터를 넣어줌
 app.use(express.urlencoded({ extended: true })); // form submit 데이터를 넣어줌
+// 세션에 저장
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(
+  session({
+    saveUninitialized: false,
+    resave: false,
+    secret: process.env.COOKIE_SECRET,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.get("/", (req, res) => {
   res.send("hello express");

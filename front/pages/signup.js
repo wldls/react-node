@@ -14,7 +14,7 @@ const ErrorMessage = styled.div`
 
 const Signup = () => {
   const dispatch = useDispatch();
-  const { loading, data, error } = useSelector((state) => state.user.signup);
+  const { signup, login } = useSelector((state) => state.user);
   const [email, onChangeEmail] = useinput("");
   const [nickname, onChangeNickname] = useinput("");
   const [password, onChangePassword] = useinput("");
@@ -24,15 +24,21 @@ const Signup = () => {
   const [termError, setTermError] = useState(false);
 
   useEffect(() => {
-    if (data) {
+    if (signup.data) {
       Router.push("/");
-    } else if (error) {
-      alert(error);
+    } else if (signup.error) {
+      alert(signup.error);
     }
-    return () => {
-      dispatch(signupReset());
-    };
-  }, [data, error]);
+    // return () => {
+    //   dispatch(signupReset());
+    // };
+  }, [signup]);
+
+  useEffect(() => {
+    if (login.data) {
+      Router.replace("/");
+    }
+  }, [login]);
 
   const onChangePasswordCheck = useCallback(
     (e) => {
@@ -116,7 +122,7 @@ const Signup = () => {
           {termError && <ErrorMessage>약관에 동의하셔야 합니다.</ErrorMessage>}
         </div>
         <div style={{ marginTop: 10 }}>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" loading={signup.loading}>
             가입하기
           </Button>
         </div>

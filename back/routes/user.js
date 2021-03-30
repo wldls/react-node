@@ -1,11 +1,12 @@
 const express = require("express");
 const bcrypt = require("bcrypt"); // 비밀번호 암호화 라이브러리
-const { User } = require("../models"); // 구조분해할당
 const router = express.Router();
 const passport = require("passport");
+const { Post, User } = require("../models");
+const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 
 // 로그인 시도시 passport를 사용해서 전략 실행
-router.post("/login", (req, res, next) => {
+router.post("/login", isNotLoggedIn, (req, res, next) => {
   // passport authenticate에서 req, res, next를 사용하기 위해 미들웨어를 확장하는 방법 사용
   passport.authenticate("local", (err, user, info) => {
     if (err) {
@@ -21,13 +22,33 @@ router.post("/login", (req, res, next) => {
         console.error(loginErr);
         return next(loginErr);
       }
-      return res.json(user);
+      const fullUserWithoutPassword = await User.findOne({
+        where: { id: user.id },
+        attributes: {
+          exclude: ["password"],
+        },
+        include: [
+          {
+            model: Post,
+          },
+          { model: User, as: "Followings" },
+          { model: User, as: "Followers" },
+        ],
+      });
+
+      return res.status(200).json(fullUserWithoutPassword);
     });
   })(req, res, next);
 });
 
+router.post("/logout", isLoggedIn, (req, res, next) => {
+  req.logout();
+  req.session.destroy();
+  res.status(200).send("ok");
+});
+
 // Post /user
-router.post("/", async (req, res, next) => {
+router.post("/", isNotLoggedIn, async (req, res, next) => {
   try {
     // db에 동일 데이터가 있는지 확인
     const exUser = await User.findOne({
