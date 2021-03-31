@@ -1,7 +1,11 @@
 import React, { useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Form, Input } from "antd";
+import { changeNickname } from "../modules/user";
 
 const NicknameEditForm = () => {
+  const dispatch = useDispatch();
+  const { me } = useSelector((state) => state.user);
   const style = useMemo(
     () => ({
       marginBottom: "20px",
@@ -11,9 +15,20 @@ const NicknameEditForm = () => {
     []
   );
 
+  const onSearch = (value) => {
+    if (me.id) {
+      dispatch(changeNickname(value));
+    }
+  };
+
   return (
     <Form style={style}>
-      <Input.Search addonBefore="닉네임" enterButton="수정" />
+      <Input.Search
+        name="nickname"
+        addonBefore="닉네임"
+        enterButton="수정"
+        onSearch={onSearch}
+      />
     </Form>
   );
 };

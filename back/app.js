@@ -5,8 +5,10 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const dotenv = require("dotenv");
+const morgan = require("morgan");
 
 const postRouter = require("./routes/post");
+const postsRouter = require("./routes/posts");
 const userRouter = require("./routes/user");
 const db = require("./models");
 const passportConfig = require("./passport");
@@ -22,6 +24,8 @@ db.sequelize
   .catch(console.error);
 
 passportConfig();
+
+app.use(morgan("dev"));
 
 // 모든 요청에 cors 처리
 app.use(
@@ -49,19 +53,20 @@ app.get("/", (req, res) => {
   res.send("hello express");
 });
 
-app.get("/api", (req, res) => {
-  res.send("Hello API");
-});
+// app.get("/api", (req, res) => {
+//   res.send("Hello API");
+// });
 
-app.get("/posts", (req, res) => {
-  res.json([
-    { id: 1, content: "hello" },
-    { id: 2, content: "hello" },
-    { id: 3, content: "hello" },
-  ]);
-});
+// app.get("/posts", (req, res) => {
+//   res.json([
+//     { id: 1, content: "hello" },
+//     { id: 2, content: "hello" },
+//     { id: 3, content: "hello" },
+//   ]);
+// });
 
 app.use("/post", postRouter);
+app.use("/posts", postsRouter);
 app.use("/user", userRouter);
 
 app.listen(3065, () => {

@@ -12,24 +12,37 @@ import { useDispatch, useSelector } from "react-redux";
 import PostImages from "../components/PostImages";
 import CommentForm from "../components/CommentForm";
 import PostCardContent from "../components/PostCardContent";
-import { removePost } from "../modules/post";
+import { removePostAciton, likePost, unlikePost } from "../modules/post";
 import FollowButton from "./FollowButton";
 
 const PostCard = ({ post }) => {
   const dispatch = useDispatch();
   const { me } = useSelector((state) => state.user); // state.user.me?.id 이런 방식으로 사용 가능
   const id = me?.id; // 옵셔널 체이닝(optional chaining) 연산자 : me && me.id 와 동일하다.
-  const { loading } = useSelector((state) => state.post.removePost);
-  const [liked, setLiked] = useState(false);
+  const { removePost } = useSelector((state) => state.post);
+  // const [liked, setLiked] = useState(false);
   const [commentFormOpened, setCommentFormOpened] = useState(false);
-  const onToggleLike = useCallback(() => {
-    setLiked((prev) => !prev); // true를 false로, false를 true로  toggle
+  const liked = post.Likers.find((v) => v.id === id);
+
+  const onLike = useCallback((id) => {
+    if (me) {
+      dispatch(likePost(id));
+    } else {
+      alert("로그인이 필요합니다.");
+    }
+  }, []);
+  const onUnlike = useCallback((id) => {
+    if (me) {
+      dispatch(unlikePost(id));
+    } else {
+      alert("로그인이 필요합니다.");
+    }
   }, []);
   const onToggleComment = useCallback(() => {
     setCommentFormOpened((prev) => !prev);
   }, []);
   const onRemovePost = useCallback(() => {
-    dispatch(removePost(post.id));
+    dispatch(removePostAciton(post.id));
   }, []);
 
   return (
@@ -42,10 +55,17 @@ const PostCard = ({ post }) => {
             <HeartTwoTone
               twoToneColor="#eb2f96"
               key="heart"
-              onClick={onToggleLike}
+              onClick={() => {
+                onUnlike(post.id);
+              }}
             />
           ) : (
-            <HeartOutlined key="heart" onClick={onToggleLike} />
+            <HeartOutlined
+              key="heart"
+              onClick={() => {
+                onLike(post.id);
+              }}
+            />
           ),
           <MessageOutlined key="comment" onClick={onToggleComment} />,
           <Popover
@@ -57,7 +77,7 @@ const PostCard = ({ post }) => {
                     <Button>수정</Button>
                     <Button
                       type="danger"
-                      loading={loading}
+                      loading={removePost.loading}
                       onClick={onRemovePost}
                     >
                       삭제
@@ -90,8 +110,8 @@ const PostCard = ({ post }) => {
             renderItem={(item) => (
               <li>
                 <Comment
-                  author={item.User.nickname}
-                  avatar={<Avatar>{item.User.nickname[0]}</Avatar>}
+                  // author={item.User.nickname}
+                  // avatar={<Avatar>{item.User.nickname[0]}</Avatar>}
                   content={item.content}
                 />
               </li>
@@ -108,9 +128,10 @@ PostCard.propTypes = {
     // id: PropTypes.number,
     User: PropTypes.object,
     content: PropTypes.string,
-    createdAt: PropTypes.object,
+    createdAt: PropTypes.string,
     Comments: PropTypes.arrayOf(PropTypes.object),
     Images: PropTypes.arrayOf(PropTypes.object),
+    Likers: PropTypes.arrayOf(PropTypes.object),
   }).isRequired,
 };
 

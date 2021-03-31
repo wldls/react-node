@@ -9,7 +9,7 @@ const FollowButton = ({ post }) => {
   const { me, following, unFollowing } = useSelector((state) => state.user);
   const followLoading = following && following.loading;
   const unFollowLoading = unFollowing && unFollowing.loading;
-  const isFollwing = me && me.Followings.find((v) => v.id === post.User.id);
+  const isFollwing = me && me.Followings.find((v) => v.UserId === post.User.id);
   const onFollow = useCallback(() => {
     if (isFollwing) {
       dispatch(unFollowAction(post.User.id));
@@ -18,6 +18,9 @@ const FollowButton = ({ post }) => {
     }
   }, [isFollwing]);
 
+  if (post.User.id === me.id) {
+    return null;
+  }
   return (
     <Button loading={followLoading || unFollowLoading} onClick={onFollow}>
       {isFollwing ? "unfollow" : "follow"}

@@ -27,18 +27,18 @@ export const initialState = {
   loginData: {},
 };
 
-const dummyUser = (data) => ({
-  ...data,
-  nickname: "jiin",
-  id: 1,
-  Posts: [{ id: 1 }],
-  Followings: [
-    { nickname: "민지" },
-    { nickname: "정몬" },
-    { nickname: "욘지" },
-  ],
-  Followers: [{ nickname: "민지" }, { nickname: "정몬" }, { nickname: "욘지" }],
-});
+// const dummyUser = (data) => ({
+//   ...data,
+//   nickname: "jiin",
+//   id: 1,
+//   Posts: [{ id: 1 }],
+//   Followings: [
+//     { nickname: "민지" },
+//     { nickname: "정몬" },
+//     { nickname: "욘지" },
+//   ],
+//   Followers: [{ nickname: "민지" }, { nickname: "정몬" }, { nickname: "욘지" }],
+// });
 
 // 로그인 유지
 const LOAD_MYINFO = "LOAD_MYINFO";
@@ -164,7 +164,6 @@ function* loginSaga(action) {
     const result = yield call(userAPI.login, action.payload); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
     yield put({
       type: LOGIN_SUCCESS,
-      // payload: { ...action.payload, nickname: "jiin" },
       payload: result.data,
     });
   } catch (error) {
@@ -193,32 +192,48 @@ function* logoutSaga() {
 
 function* followingSaga(action) {
   try {
-    yield delay(1000);
+    const result = yield call(userAPI.follow, action.payload);
     yield put({
       type: FOLLOW_SUCCESS,
-      payload: action.payload,
+      payload: result.data,
     });
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
     yield put({
       type: FOLLOW_ERROR,
-      payload: e,
+      payload: error.response.data,
     });
   }
 }
 
 function* unFollowingSaga(action) {
   try {
-    yield delay(1000);
+    const result = yield call(userAPI.unFollow, action.payload);
     yield put({
       type: UNFOLLOW_SUCCESS,
-      payload: action.payload,
+      payload: result.data,
     });
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
     yield put({
       type: UNFOLLOW_ERROR,
-      payload: e,
+      payload: error.response.data,
+    });
+  }
+}
+
+function* changeNicknameSaga(action) {
+  try {
+    const result = yield call(userAPI.changeNickname, action.payload);
+    yield put({
+      type: CHANGE_NICKNAME_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error.response.data);
+    yield put({
+      type: CHANGE_NICKNAME_ERROR,
+      error: error.response.data,
     });
   }
 }
@@ -230,6 +245,7 @@ export function* userSaga() {
   yield takeLatest(LOGOUT, logoutSaga);
   yield takeLatest(FOLLOW, followingSaga);
   yield takeLatest(UNFOLLOW, unFollowingSaga);
+  yield takeLatest(CHANGE_NICKNAME, changeNicknameSaga);
 }
 
 const reducer = (state = initialState, action) => {
@@ -272,8 +288,11 @@ const reducer = (state = initialState, action) => {
         ...state,
         signup: reducerUtils.initial(),
       };
-    case CHANGE_NICKNAME:
     case CHANGE_NICKNAME_SUCCESS:
+      return produce(state, (draft) => {
+        draft.me.nickname = action.payload.nickname;
+      });
+    case CHANGE_NICKNAME:
     case CHANGE_NICKNAME_ERROR:
       return handleAsyncActions(CHANGE_NICKNAME, "changeNickname")(
         state,
@@ -290,8 +309,8 @@ const reducer = (state = initialState, action) => {
       });
     case FOLLOW_SUCCESS:
       return produce(state, (draft) => {
-        draft.me.Followings.push({ id: action.payload });
-        draft.follow = reducerUtils.success(null);
+        draft.me.Followings.push(action.payload);
+        draft.follow = reducerUtils.success(action.payload);
       });
     case FOLLOW:
     case FOLLOW_ERROR:
@@ -299,9 +318,9 @@ const reducer = (state = initialState, action) => {
     case UNFOLLOW_SUCCESS:
       return produce(state, (draft) => {
         draft.me.Followings = draft.me.Followings.filter(
-          (v) => v.id !== action.payload
+          (v) => v.id !== action.payload.UserId
         );
-        draft.unFollow = reducerUtils.success(null);
+        draft.unFollow = reducerUtils.success(action.payload);
       });
     case UNFOLLOW:
     case UNFOLLOW_ERROR:

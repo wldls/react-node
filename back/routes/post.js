@@ -12,7 +12,25 @@ router.post("/", isLoggedIn, async (req, res, next) => {
     });
     const fullPost = await Post.findOne({
       where: { id: post.id },
-      include: [{ model: Image }, { model: Comment }, { model: User }],
+      include: [
+        { model: Image },
+        {
+          model: Comment,
+          // 댓글작성자
+          include: [{ model: User, attributes: ["id", "nickname"] }],
+        },
+        {
+          // 게시글 작성자
+          model: User,
+          attributes: ["id", "nickname"],
+        },
+        {
+          // 좋아요 누른 사람
+          model: User,
+          as: "Likers",
+          attributes: ["id"],
+        },
+      ],
     });
     res.status(200).json(fullPost);
   } catch (error) {
@@ -21,9 +39,29 @@ router.post("/", isLoggedIn, async (req, res, next) => {
   }
 });
 
+// router.put("/:postId", isLoggedIn, async (req, res, next) => {
+//   try {
+//     const post = await Post.findOne({
+//       where: { id: post.id },
+//     });
+//     res.status(200).json(post);
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// });
+
 // DELETE /post
-router.delete("/", (req, res) => {
-  res.json({ id: 2, content: "hello" });
+router.delete("/:postId", isLoggedIn, async (req, res, next) => {
+  try {
+    await Post.destroy({
+      where: { id: req.params.postId, UserId: req.user.id },
+    });
+    res.status(200).json({ PostId: Number(req.params.postId) });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
 });
 
 // POST /post/1/comment
@@ -37,10 +75,59 @@ router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
     }
     const comment = await Comment.create({
       content: req.body.content,
-      PostId: req.params.postId,
+      PostId: Number(req.params.postId),
       UserId: req.user.id,
     });
-    res.status(200).json(comment);
+    const fullComment = await Comment.findOne({
+      where: { id: comment.id },
+      include: [
+        {
+          model: User,
+          attributes: ["id", "nickname"],
+        },
+      ],
+    });
+    res.status(200).json(fullComment);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// like
+router.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await Post.findOne({
+      where: { id: req.params.postId },
+    });
+
+    if (!post) {
+      return res.status(403).send("게시글이 존재하지 않습니다.");
+    }
+
+    await post.addLikers(req.user.id);
+
+    res.status(200).json({ PostId: post.id, UserId: req.user.id });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// unlike
+router.delete("/:postId/unlike", isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await Post.findOne({
+      where: { id: req.params.postId },
+    });
+
+    if (!post) {
+      return res.status(403).send("게시글이 존재하지 않습니다.");
+    }
+
+    await post.removeLikers(req.user.id);
+
+    res.status(200).json({ PostId: post.id, UserId: req.user.id });
   } catch (error) {
     console.error(error);
     next(error);
