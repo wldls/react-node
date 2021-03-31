@@ -8,6 +8,8 @@ export const myinfo = () => client.get("/user");
 
 export const follow = (payload) => client.patch(`/user/${payload}/follow`);
 export const unFollow = (payload) => client.delete(`/user/${payload}/follow`);
+export const loadFollowers = () => client.get(`/user/followers`);
+export const loadFollowings = () => client.get(`/user/followings`);
 
 export const changeNickname = (payload) =>
   client.patch("/user/nickname", { nickname: payload });

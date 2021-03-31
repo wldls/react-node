@@ -89,8 +89,8 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
           {
             model: Post,
           },
-          { model: User, as: "Followings" },
-          { model: User, as: "Followers" },
+          { model: User, as: "Followings", attributes: ["id"] },
+          { model: User, as: "Followers", attributes: ["id"] },
         ],
       });
 
@@ -130,6 +130,7 @@ router.patch("/:userId/follow", isLoggedIn, async (req, res, next) => {
     if (!user) {
       return res.status(403).send("사용자가 없습니다.");
     }
+
     await user.addFollowers(req.user.id);
 
     res.status(200).json({ UserId: Number(req.params.userId) });
@@ -148,6 +149,34 @@ router.delete("/:userId/follow", isLoggedIn, async (req, res, next) => {
     }
     await user.removeFollowers(req.user.id);
     res.status(200).json({ UserId: Number(req.params.userId) });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get("/followers", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(403).send("사용자가 없습니다.");
+    }
+    const followers = await user.getFollowers();
+    res.status(200).json(followers);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get("/followings", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(403).send("사용자가 없습니다.");
+    }
+    const followings = await user.getFollowings();
+    res.status(200).json(followings);
   } catch (error) {
     console.error(error);
     next(error);

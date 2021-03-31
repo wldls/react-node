@@ -13,6 +13,8 @@ export const initialState = {
   signup: reducerUtils.initial(),
   follow: reducerUtils.initial(),
   unFollow: reducerUtils.initial(),
+  followers: reducerUtils.initial(),
+  followings: reducerUtils.initial(),
   changeNickname: reducerUtils.initial(),
   myinfo: reducerUtils.initial(),
   me: null,
@@ -75,6 +77,14 @@ const CHANGE_NICKNAME = "CHANGE_NICKNAME";
 const CHANGE_NICKNAME_SUCCESS = "CHANGE_NICKNAME_SUCCESS";
 const CHANGE_NICKNAME_ERROR = "CHANGE_NICKNAME_ERROR";
 
+const LOAD_FOLLOWERS = "LOAD_FOLLOWERS";
+const LOAD_FOLLOWERS_SUCCESS = "LOAD_FOLLOWERS_SUCCESS";
+const LOAD_FOLLOWERS_ERROR = "LOAD_FOLLOWERS_ERROR";
+
+const LOAD_FOLLOWINGS = "LOAD_FOLLOWINGS";
+const LOAD_FOLLOWINGS_SUCCESS = "LOAD_FOLLOWINGS_SUCCESS";
+const LOAD_FOLLOWINGS_ERROR = "LOAD_FOLLOWINGS_ERROR";
+
 const ADD_POST_MINE = "ADD_POST_MINE";
 const REMOVE_POST_MINE = "REMOVE_POST_MINE";
 
@@ -124,6 +134,14 @@ export const followAction = (payload) => ({
 export const unFollowAction = (payload) => ({
   type: UNFOLLOW,
   payload,
+});
+
+export const loadFollowersAction = () => ({
+  type: LOAD_FOLLOWERS,
+});
+
+export const loadFollowingsAction = () => ({
+  type: LOAD_FOLLOWINGS,
 });
 
 function* signupSaga(action) {
@@ -222,6 +240,38 @@ function* unFollowingSaga(action) {
   }
 }
 
+function* loadFollowersSaga() {
+  try {
+    const result = yield call(userAPI.loadFollowers);
+    yield put({
+      type: LOAD_FOLLOWERS_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: LOAD_FOLLOWERS_ERROR,
+      payload: error.response.data,
+    });
+  }
+}
+
+function* loadFollowingsSaga() {
+  try {
+    const result = yield call(userAPI.loadFollowings);
+    yield put({
+      type: LOAD_FOLLOWINGS_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: LOAD_FOLLOWINGS_ERROR,
+      payload: error.response.data,
+    });
+  }
+}
+
 function* changeNicknameSaga(action) {
   try {
     const result = yield call(userAPI.changeNickname, action.payload);
@@ -245,6 +295,8 @@ export function* userSaga() {
   yield takeLatest(LOGOUT, logoutSaga);
   yield takeLatest(FOLLOW, followingSaga);
   yield takeLatest(UNFOLLOW, unFollowingSaga);
+  yield takeLatest(LOAD_FOLLOWERS, loadFollowersSaga);
+  yield takeLatest(LOAD_FOLLOWINGS, loadFollowingsSaga);
   yield takeLatest(CHANGE_NICKNAME, changeNicknameSaga);
 }
 
@@ -309,7 +361,7 @@ const reducer = (state = initialState, action) => {
       });
     case FOLLOW_SUCCESS:
       return produce(state, (draft) => {
-        draft.me.Followings.push(action.payload);
+        draft.me.Followings.push({ id: action.payload.UserId });
         draft.follow = reducerUtils.success(action.payload);
       });
     case FOLLOW:
@@ -325,6 +377,20 @@ const reducer = (state = initialState, action) => {
     case UNFOLLOW:
     case UNFOLLOW_ERROR:
       return handleAsyncActions(UNFOLLOW, "unFollow")(state, action);
+    case LOAD_FOLLOWERS_SUCCESS:
+      return produce(state, (draft) => {
+        draft.me.Followers = action.payload;
+      });
+    case LOAD_FOLLOWERS:
+    case LOAD_FOLLOWERS_ERROR:
+      return handleAsyncActions(LOAD_FOLLOWERS, "followers")(state, action);
+    case LOAD_FOLLOWINGS_SUCCESS:
+      return produce(state, (draft) => {
+        draft.me.Followings = action.payload;
+      });
+    case LOAD_FOLLOWINGS:
+    case LOAD_FOLLOWINGS_ERROR:
+      return handleAsyncActions(LOAD_FOLLOWINGS, "followings")(state, action);
     default:
       return state;
   }
