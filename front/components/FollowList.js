@@ -3,13 +3,17 @@ import PropTypes from "prop-types";
 import { List, Card, Button } from "antd";
 import { StopOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
-import { unFollowAction } from "../modules/user";
+import { unFollowAction, removeFollowerAction } from "../modules/user";
 
 const FollowList = ({ header, data }) => {
   const dispatch = useDispatch();
 
   const onClick = (id) => () => {
-    dispatch(unFollowAction(id));
+    if (header === "팔로잉") {
+      dispatch(unFollowAction(id));
+    } else {
+      dispatch(removeFollowerAction(id));
+    }
   };
   return (
     <List

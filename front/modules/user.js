@@ -13,6 +13,7 @@ export const initialState = {
   signup: reducerUtils.initial(),
   follow: reducerUtils.initial(),
   unFollow: reducerUtils.initial(),
+  removeFollower: reducerUtils.initial(),
   followers: reducerUtils.initial(),
   followings: reducerUtils.initial(),
   changeNickname: reducerUtils.initial(),
@@ -72,6 +73,10 @@ const FOLLOW_ERROR = "FOLLOW_ERROR";
 const UNFOLLOW = "UNFOLLOW";
 const UNFOLLOW_SUCCESS = "UNFOLLOW_SUCCESS";
 const UNFOLLOW_ERROR = "UNFOLLOW_ERROR";
+
+const REMOVE_FOLLOWER = "REMOVE_FOLLOWER";
+const REMOVE_FOLLOWER_SUCCESS = "REMOVE_FOLLOWER_SUCCESS";
+const REMOVE_FOLLOWER_ERROR = "REMOVE_FOLLOWER_ERROR";
 
 const CHANGE_NICKNAME = "CHANGE_NICKNAME";
 const CHANGE_NICKNAME_SUCCESS = "CHANGE_NICKNAME_SUCCESS";
@@ -133,6 +138,11 @@ export const followAction = (payload) => ({
 
 export const unFollowAction = (payload) => ({
   type: UNFOLLOW,
+  payload,
+});
+
+export const removeFollowerAction = (payload) => ({
+  type: REMOVE_FOLLOWER,
   payload,
 });
 
@@ -240,6 +250,22 @@ function* unFollowingSaga(action) {
   }
 }
 
+function* removeFollowerSaga(action) {
+  try {
+    const result = yield call(userAPI.removeFollower, action.payload);
+    yield put({
+      type: REMOVE_FOLLOWER_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: REMOVE_FOLLOWER_ERROR,
+      payload: error.response.data,
+    });
+  }
+}
+
 function* loadFollowersSaga() {
   try {
     const result = yield call(userAPI.loadFollowers);
@@ -295,6 +321,7 @@ export function* userSaga() {
   yield takeLatest(LOGOUT, logoutSaga);
   yield takeLatest(FOLLOW, followingSaga);
   yield takeLatest(UNFOLLOW, unFollowingSaga);
+  yield takeLatest(REMOVE_FOLLOWER, removeFollowerSaga);
   yield takeLatest(LOAD_FOLLOWERS, loadFollowersSaga);
   yield takeLatest(LOAD_FOLLOWINGS, loadFollowingsSaga);
   yield takeLatest(CHANGE_NICKNAME, changeNicknameSaga);
@@ -362,7 +389,7 @@ const reducer = (state = initialState, action) => {
     case FOLLOW_SUCCESS:
       return produce(state, (draft) => {
         draft.me.Followings.push({ id: action.payload.UserId });
-        draft.follow = reducerUtils.success(action.payload);
+        draft.follow = reducerUtils.success({ id: action.payload.UserId });
       });
     case FOLLOW:
     case FOLLOW_ERROR:
@@ -377,6 +404,19 @@ const reducer = (state = initialState, action) => {
     case UNFOLLOW:
     case UNFOLLOW_ERROR:
       return handleAsyncActions(UNFOLLOW, "unFollow")(state, action);
+    case REMOVE_FOLLOWER_SUCCESS:
+      return produce(state, (draft) => {
+        draft.me.Followers = draft.me.Followers.filter(
+          (v) => v.id !== action.payload.UserId
+        );
+        draft.removeFollower = reducerUtils.success(action.payload);
+      });
+    case REMOVE_FOLLOWER:
+    case REMOVE_FOLLOWER_ERROR:
+      return handleAsyncActions(REMOVE_FOLLOWER, "removeFollower")(
+        state,
+        action
+      );
     case LOAD_FOLLOWERS_SUCCESS:
       return produce(state, (draft) => {
         draft.me.Followers = action.payload;

@@ -88,6 +88,7 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
         include: [
           {
             model: Post,
+            attributes: ["id"],
           },
           { model: User, as: "Followings", attributes: ["id"] },
           { model: User, as: "Followers", attributes: ["id"] },
@@ -148,6 +149,21 @@ router.delete("/:userId/follow", isLoggedIn, async (req, res, next) => {
       return res.status(403).send("사용자가 없습니다.");
     }
     await user.removeFollowers(req.user.id);
+    res.status(200).json({ UserId: Number(req.params.userId) });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// DELETE /user/follower/2
+router.delete("/follower/:userId", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.params.userId } });
+    if (!user) {
+      return res.status(403).send("사용자가 없습니다.");
+    }
+    await user.removeFollowings(req.user.id);
     res.status(200).json({ UserId: Number(req.params.userId) });
   } catch (error) {
     console.error(error);
