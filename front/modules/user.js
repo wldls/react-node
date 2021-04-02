@@ -169,7 +169,7 @@ function* signupSaga(action) {
   }
 }
 
-function* loadMyinfoSata() {
+function* loadMyinfoSaga() {
   try {
     const result = yield call(userAPI.myinfo);
     yield put({
@@ -315,7 +315,7 @@ function* changeNicknameSaga(action) {
 }
 
 export function* userSaga() {
-  yield takeLatest(LOAD_MYINFO, loadMyinfoSata);
+  yield takeLatest(LOAD_MYINFO, loadMyinfoSaga);
   yield takeLatest(SIGNUP, signupSaga);
   yield takeLatest(LOGIN, loginSaga);
   yield takeLatest(LOGOUT, logoutSaga);

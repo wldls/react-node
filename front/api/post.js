@@ -11,3 +11,5 @@ export const addComment = (payload) =>
 export const likePost = (payload) => client.patch(`/post/${payload}/like`);
 
 export const unlikePost = (payload) => client.delete(`/post/${payload}/unlike`);
+
+export const uploadImages = (payload) => client.post("/post/images", payload);

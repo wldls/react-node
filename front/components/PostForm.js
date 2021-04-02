@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { Form, Input, Button } from "antd";
 import { useSelector, useDispatch } from "react-redux";
-import { addPost } from "../modules/post";
+import { addPost, uploadImagesAction } from "../modules/post";
 import useInput from "../hooks/useInput";
 
 const PostForm = () => {
@@ -25,6 +25,17 @@ const PostForm = () => {
     imageInput.current.click();
   }, [imageInput.current]);
 
+  const onChangeImages = useCallback((e) => {
+    console.log("images", e.target.files);
+    // FormData를 이용해야 multipart형식으로 보낼 수 있음. 반드시 multipart형식으로 보내야 multer가 처리
+    const imageFormData = new FormData();
+    // e.target.files가 유사배열객체
+    [].forEach.call(e.target.files, (f) => {
+      imageFormData.append("image", f);
+    });
+    dispatch(uploadImagesAction(imageFormData));
+  });
+
   return (
     <Form
       style={{ margin: "10px 0 20px" }}
@@ -38,7 +49,14 @@ const PostForm = () => {
         placeholde="어떤 신기한 일이 있엇나요?"
       />
       <div>
-        <input type="file" multiple hidden ref={imageInput} />
+        <input
+          type="file"
+          name="image"
+          multiple
+          hidden
+          ref={imageInput}
+          onChange={onChangeImages}
+        />
         <Button onClick={onClickImageUpload}>이미지 업로드</Button>
         <Button type="primary" style={{ float: "right" }} htmlType="submit">
           짹짹

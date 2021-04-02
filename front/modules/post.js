@@ -14,6 +14,7 @@ const initialState = {
   comment: reducerUtils.initial(),
   likePost: reducerUtils.initial(),
   unlikePost: reducerUtils.initial(),
+  uploadImages: reducerUtils.initial(),
 };
 
 const LOAD_POST = "LOAD_POST";
@@ -40,6 +41,10 @@ const UNLIKE_POST = "UNLIKE_POST";
 const UNLIKE_POST_SUCCESS = "UNLIKE_POST_SUCCESS";
 const UNLIKE_POST_ERROR = "UNLIKE_POST_ERROR";
 
+const UPLOAD_IMAGES = "UPLOAD_IMAGES";
+const UPLOAD_IMAGES_SUCCESS = "UPLOAD_IMAGES_SUCCESS";
+const UPLOAD_IMAGES_ERROR = "UPLOAD_IMAGES_ERROR";
+
 export const loadPost = () => ({ type: LOAD_POST });
 export const addPost = (payload) => ({ type: ADD_POST, payload });
 export const removePostAciton = (payload) => ({ type: REMOVE_POST, payload });
@@ -51,6 +56,10 @@ export const addComment = (payload) => ({
 
 export const likePost = (payload) => ({ type: LIKE_POST, payload });
 export const unlikePost = (payload) => ({ type: UNLIKE_POST, payload });
+export const uploadImagesAction = (payload) => ({
+  type: UPLOAD_IMAGES,
+  payload,
+});
 
 function* loadPostSaga(action) {
   try {
@@ -150,6 +159,23 @@ function* unlikePostSaga(action) {
   }
 }
 
+function* uploadImagesSaga(action) {
+  console.log(action);
+  try {
+    const result = yield call(postAPI.uploadImages, action.payload);
+    yield put({
+      type: UPLOAD_IMAGES_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error);
+    yield put({
+      type: UPLOAD_IMAGES_ERROR,
+      error: error.response.data,
+    });
+  }
+}
+
 export function* postSaga() {
   yield takeLatest(LOAD_POST, loadPostSaga);
   yield takeLatest(ADD_POST, addPostSaga);
@@ -157,6 +183,7 @@ export function* postSaga() {
   yield takeLatest(ADD_COMMENT, addCommentSaga);
   yield takeLatest(LIKE_POST, likePostSaga);
   yield takeLatest(UNLIKE_POST, unlikePostSaga);
+  yield takeLatest(UPLOAD_IMAGES, uploadImagesSaga);
 }
 
 // (이전상태 ,액션) => 다음상태
@@ -231,6 +258,15 @@ const reducer = (state = initialState, action) => {
     case UNLIKE_POST:
     case UNLIKE_POST_ERROR:
       return handleAsyncActions(UNLIKE_POST, "unlikePost")(state, action);
+
+    case UPLOAD_IMAGES_SUCCESS:
+      return {
+        ...state,
+        imagePaths: action.payload,
+      };
+    case UPLOAD_IMAGES:
+    case UPLOAD_IMAGES_ERROR:
+      return handleAsyncActions(UPLOAD_IMAGES, "uploadImages")(state, action);
     default:
       return state;
   }
