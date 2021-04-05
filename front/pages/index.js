@@ -9,6 +9,7 @@ import { loadMyinfo } from "../modules/user";
 const Home = () => {
   const dispatch = useDispatch();
   const { me } = useSelector((state) => state.user);
+  const { retweet } = useSelector((state) => state.post);
   const { mainPosts, hasMorePosts, reqPost } = useSelector(
     (state) => state.post
   );
@@ -19,6 +20,12 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    if (retweet.error) {
+      alert(retweet.error);
+    }
+  }, [retweet.error]);
+
+  useEffect(() => {
     const onScroll = () => {
       const scrollY = window.scrollY,
         clientHeight = document.documentElement.clientHeight,
@@ -26,7 +33,10 @@ const Home = () => {
 
       if (scrollY + clientHeight >= scrollHeight - 500) {
         if (hasMorePosts && !reqPost.loading) {
-          dispatch(loadPost());
+          const mainPostsLen = mainPosts.length;
+          const lastId = mainPostsLen ? mainPosts[mainPostsLen - 1].id : 0; // 마지막 게시글의 id
+          console.log(lastId);
+          dispatch(loadPost(lastId));
         }
       }
     };
@@ -36,7 +46,7 @@ const Home = () => {
     return () => {
       window.removeEventListener("scroll", onScroll);
     };
-  }, [hasMorePosts, reqPost]);
+  }, [hasMorePosts, reqPost, mainPosts]);
 
   return (
     <AppLayout>

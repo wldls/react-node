@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
+const path = require("path");
 
 const postRouter = require("./routes/post");
 const postsRouter = require("./routes/posts");
@@ -34,6 +35,7 @@ app.use(
     credentials: true, // 쿠키도 같이 전달
   })
 );
+app.use("/", express.static(path.join(__dirname, "uploads")));
 // front에서 받은 데이터를 req.body 안에 넣어줌 반드시 맨위에 선언되어야 한다.
 app.use(express.json()); // json형식의 데이터를 넣어줌
 app.use(express.urlencoded({ extended: true })); // form submit 데이터를 넣어줌

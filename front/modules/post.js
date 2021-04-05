@@ -15,6 +15,8 @@ const initialState = {
   likePost: reducerUtils.initial(),
   unlikePost: reducerUtils.initial(),
   uploadImages: reducerUtils.initial(),
+  removeImages: reducerUtils.initial(),
+  retweet: reducerUtils.initial(),
 };
 
 const LOAD_POST = "LOAD_POST";
@@ -45,7 +47,13 @@ const UPLOAD_IMAGES = "UPLOAD_IMAGES";
 const UPLOAD_IMAGES_SUCCESS = "UPLOAD_IMAGES_SUCCESS";
 const UPLOAD_IMAGES_ERROR = "UPLOAD_IMAGES_ERROR";
 
-export const loadPost = () => ({ type: LOAD_POST });
+const REMOVE_IMAGES = "REMOVE_IMAGES";
+
+const RETWEET = "RETWEET";
+const RETWEET_SUCCESS = "RETWEET_SUCCESS";
+const RETWEET_ERROR = "RETWEET_ERROR";
+
+export const loadPost = (payload) => ({ type: LOAD_POST, payload });
 export const addPost = (payload) => ({ type: ADD_POST, payload });
 export const removePostAciton = (payload) => ({ type: REMOVE_POST, payload });
 
@@ -58,6 +66,14 @@ export const likePost = (payload) => ({ type: LIKE_POST, payload });
 export const unlikePost = (payload) => ({ type: UNLIKE_POST, payload });
 export const uploadImagesAction = (payload) => ({
   type: UPLOAD_IMAGES,
+  payload,
+});
+export const removeImagesAction = (payload) => ({
+  type: REMOVE_IMAGES,
+  payload,
+});
+export const retweetAction = (payload) => ({
+  type: RETWEET,
   payload,
 });
 
@@ -176,6 +192,22 @@ function* uploadImagesSaga(action) {
   }
 }
 
+function* rewteetSaga(action) {
+  try {
+    const result = yield call(postAPI.retweet, action.payload);
+    yield put({
+      type: RETWEET_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error.response.data);
+    yield put({
+      type: RETWEET_ERROR,
+      error: error.response.data,
+    });
+  }
+}
+
 export function* postSaga() {
   yield takeLatest(LOAD_POST, loadPostSaga);
   yield takeLatest(ADD_POST, addPostSaga);
@@ -184,6 +216,7 @@ export function* postSaga() {
   yield takeLatest(LIKE_POST, likePostSaga);
   yield takeLatest(UNLIKE_POST, unlikePostSaga);
   yield takeLatest(UPLOAD_IMAGES, uploadImagesSaga);
+  yield takeLatest(RETWEET, rewteetSaga);
 }
 
 // (이전상태 ,액션) => 다음상태
@@ -207,6 +240,7 @@ const reducer = (state = initialState, action) => {
       return produce(state, (draft) => {
         draft.post = reducerUtils.success(action.payload);
         draft.mainPosts.unshift(action.payload);
+        draft.imagePaths = [];
       });
     case ADD_POST_ERROR:
       return handleAsyncActions(ADD_POST, "post")(state, action);
@@ -258,7 +292,6 @@ const reducer = (state = initialState, action) => {
     case UNLIKE_POST:
     case UNLIKE_POST_ERROR:
       return handleAsyncActions(UNLIKE_POST, "unlikePost")(state, action);
-
     case UPLOAD_IMAGES_SUCCESS:
       return {
         ...state,
@@ -267,6 +300,21 @@ const reducer = (state = initialState, action) => {
     case UPLOAD_IMAGES:
     case UPLOAD_IMAGES_ERROR:
       return handleAsyncActions(UPLOAD_IMAGES, "uploadImages")(state, action);
+    case REMOVE_IMAGES:
+      const newPaths = state.imagePaths.filter((v, i) => i !== action.payload);
+      return {
+        ...state,
+        imagePaths: newPaths,
+      };
+    case RETWEET_SUCCESS:
+      const addRetweet = state.mainPosts.concat(action.payload);
+      return {
+        ...state,
+        mainPosts: addRetweet,
+      };
+    case RETWEET:
+    case RETWEET_ERROR:
+      return handleAsyncActions(RETWEET, "retweet")(state, action);
     default:
       return state;
   }
