@@ -35,7 +35,6 @@ const Home = () => {
         if (hasMorePosts && !reqPost.loading) {
           const mainPostsLen = mainPosts.length;
           const lastId = mainPostsLen ? mainPosts[mainPostsLen - 1].id : 0; // 마지막 게시글의 id
-          console.log(lastId);
           dispatch(loadPost(lastId));
         }
       }
