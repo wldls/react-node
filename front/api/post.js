@@ -1,6 +1,7 @@
 import client from "./index";
 
-export const loadPost = (payload) => client.get(`/posts?lastId=${payload}`);
+export const loadPost = (payload) =>
+  client.get(`/posts?lastId=${payload || 0}`);
 export const addPost = (payload) => client.post("/post", payload);
 export const removePost = (payload) => client.delete(`/post/${payload}`);
 

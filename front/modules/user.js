@@ -1,9 +1,5 @@
-import { takeLatest, put, call, delay } from "redux-saga/effects";
-import {
-  createPromiseSaga,
-  reducerUtils,
-  handleAsyncActions,
-} from "../lib/asyncUtils";
+import { takeLatest, put, call } from "redux-saga/effects";
+import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
 import * as userAPI from "../api/user";
 import produce from "immer";
 
@@ -177,7 +173,6 @@ function* loadMyinfoSaga() {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: LOAD_MYINFO_ERROR,
       error: error.response.data,
@@ -210,7 +205,6 @@ function* logoutSaga() {
       type: LOGOUT_SUCCESS,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: LOGOUT_ERROR,
       error: error.response.data,
@@ -226,7 +220,6 @@ function* followingSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: FOLLOW_ERROR,
       payload: error.response.data,
@@ -242,7 +235,6 @@ function* unFollowingSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: UNFOLLOW_ERROR,
       payload: error.response.data,
@@ -258,7 +250,6 @@ function* removeFollowerSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: REMOVE_FOLLOWER_ERROR,
       payload: error.response.data,
@@ -274,7 +265,6 @@ function* loadFollowersSaga() {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: LOAD_FOLLOWERS_ERROR,
       payload: error.response.data,
@@ -290,7 +280,6 @@ function* loadFollowingsSaga() {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: LOAD_FOLLOWINGS_ERROR,
       payload: error.response.data,

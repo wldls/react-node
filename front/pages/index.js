@@ -1,8 +1,12 @@
 import React, { useEffect } from "react";
+import axios from "axios";
+import { END } from "redux-saga";
+
 import AppLayout from "../components/AppLayout";
 import PostForm from "../components/PostForm";
 import PostCard from "../components/PostCard";
 import { useDispatch, useSelector } from "react-redux";
+import wrapper from "../store/configureStore";
 import { loadPost } from "../modules/post";
 import { loadMyinfo } from "../modules/user";
 
@@ -13,11 +17,6 @@ const Home = () => {
   const { mainPosts, hasMorePosts, reqPost } = useSelector(
     (state) => state.post
   );
-
-  useEffect(() => {
-    dispatch(loadMyinfo());
-    dispatch(loadPost());
-  }, []);
 
   useEffect(() => {
     if (retweet.error) {
@@ -57,5 +56,30 @@ const Home = () => {
     </AppLayout>
   );
 };
+
+// 화면을 그리기 전에 서버쪽에서 먼저 실행
+export const getServerSideProps = wrapper.getServerSideProps(
+  async (context) => {
+    console.log("context: ", context);
+    const cookie = context.req ? context.req.headers.cookie : "";
+
+    // 로그인 정보가 공유되는 문제를 위해 분기처리 - 서버일 때, 쿠키가 있을 때 쿠키 전달. 아니면 쿠키 제거
+    axios.defaults.headers.Cookie = "";
+
+    if (context.req && cookie) {
+      // 서버로 쿠키 전달
+      axios.defaults.headers.Cookie = cookie;
+    }
+
+    // context 안에 store가 들어있음
+    context.store.dispatch(loadMyinfo());
+    context.store.dispatch(loadPost());
+
+    // request가 success가 될 때까지 기다려줌
+    context.store.dispatch(END);
+    // sagaTask는 configureStore에 구현되어있다.
+    await context.store.sagaTask.toPromise();
+  }
+);
 
 export default Home;

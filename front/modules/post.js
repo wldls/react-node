@@ -85,7 +85,6 @@ function* loadPostSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: LOAD_POST_ERROR,
       error: error.response.data,
@@ -102,7 +101,6 @@ function* addPostSaga(action) {
     });
     yield put(addPostMine(result.data.id));
   } catch (error) {
-    console.log(error);
     yield put({
       type: ADD_POST_ERROR,
       payload: error,
@@ -119,7 +117,6 @@ function* removePostSaga(action) {
     });
     yield put(removePostMine(action.payload));
   } catch (error) {
-    console.log(error);
     yield put({
       type: REMOVE_POST_ERROR,
       payload: error.response.data,
@@ -135,7 +132,6 @@ function* addCommentSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: ADD_COMMENT_ERROR,
       payload: error,
@@ -151,7 +147,6 @@ function* likePostSaga(action) {
       payload: result.data, // postId, userId
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: LIKE_POST_ERROR,
       error: error.response.data,
@@ -167,7 +162,6 @@ function* unlikePostSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: UNLIKE_POST_ERROR,
       error: error.response.data,
@@ -176,7 +170,6 @@ function* unlikePostSaga(action) {
 }
 
 function* uploadImagesSaga(action) {
-  console.log(action);
   try {
     const result = yield call(postAPI.uploadImages, action.payload);
     yield put({
@@ -184,7 +177,6 @@ function* uploadImagesSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error);
     yield put({
       type: UPLOAD_IMAGES_ERROR,
       error: error.response.data,
@@ -200,7 +192,6 @@ function* rewteetSaga(action) {
       payload: result.data,
     });
   } catch (error) {
-    console.log(error.response.data);
     yield put({
       type: RETWEET_ERROR,
       error: error.response.data,
