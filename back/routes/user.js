@@ -8,7 +8,6 @@ const router = express.Router();
 
 // GET /user
 router.get("/", async (req, res, next) => {
-  console.log(req.headers);
   try {
     if (req.user) {
       const fullUserWithoutPassword = await User.findOne({
@@ -29,6 +28,41 @@ router.get("/", async (req, res, next) => {
       res.status(200).json(fullUserWithoutPassword);
     } else {
       res.status(200).json(null);
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// GET /user
+router.get("/:userId", async (req, res, next) => {
+  try {
+    const fullUserWithoutPassword = await User.findOne({
+      where: { id: req.params.userId },
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        {
+          model: Post,
+          attributes: ["id"],
+        },
+        { model: User, as: "Followings", attributes: ["id"] },
+        { model: User, as: "Followers", attributes: ["id"] },
+      ],
+    });
+
+    if (fullUserWithoutPassword) {
+      const data = fullUserWithoutPassword.toJSON();
+      // 타인의 정보를 가져올 때는 개인정보 보호를 위해 서버 측에서 갯수만 보내준다.
+      data.Posts = data.Posts.length;
+      data.Followers = data.Followers.length;
+      data.Followings = data.Followings.length;
+
+      res.status(200).json(data);
+    } else {
+      res.status(404).send("존재하지 않는 사용자입니다.");
     }
   } catch (error) {
     console.error(error);

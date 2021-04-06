@@ -13,6 +13,7 @@ export const initialState = {
   followers: reducerUtils.initial(),
   followings: reducerUtils.initial(),
   changeNickname: reducerUtils.initial(),
+  userInfo: reducerUtils.initial(),
   myinfo: reducerUtils.initial(),
   me: null,
   // me: {
@@ -25,19 +26,6 @@ export const initialState = {
   signUpData: {},
   loginData: {},
 };
-
-// const dummyUser = (data) => ({
-//   ...data,
-//   nickname: "jiin",
-//   id: 1,
-//   Posts: [{ id: 1 }],
-//   Followings: [
-//     { nickname: "민지" },
-//     { nickname: "정몬" },
-//     { nickname: "욘지" },
-//   ],
-//   Followers: [{ nickname: "민지" }, { nickname: "정몬" }, { nickname: "욘지" }],
-// });
 
 // 로그인 유지
 const LOAD_MYINFO = "LOAD_MYINFO";
@@ -89,9 +77,18 @@ const LOAD_FOLLOWINGS_ERROR = "LOAD_FOLLOWINGS_ERROR";
 const ADD_POST_MINE = "ADD_POST_MINE";
 const REMOVE_POST_MINE = "REMOVE_POST_MINE";
 
+const LOAD_USERINFO = "LOAD_USERINFO";
+const LOAD_USERINFO_SUCCESS = "LOAD_USERINFO_SUCCESS";
+const LOAD_USERINFO_ERROR = "LOAD_USERINFO_ERROR";
+
 // action creator
 export const loadMyinfo = () => ({
   type: LOAD_MYINFO,
+});
+
+export const loadUserinfo = (payload) => ({
+  type: LOAD_USERINFO,
+  payload,
 });
 
 export const changeNickname = (payload) => ({
@@ -303,6 +300,22 @@ function* changeNicknameSaga(action) {
   }
 }
 
+function* loadUserinfoSaga(action) {
+  try {
+    const result = yield call(userAPI.userInfo, action.payload);
+    yield put({
+      type: LOAD_USERINFO_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    console.log(error.response.data);
+    yield put({
+      type: LOAD_USERINFO_ERROR,
+      error: error.response.data,
+    });
+  }
+}
+
 export function* userSaga() {
   yield takeLatest(LOAD_MYINFO, loadMyinfoSaga);
   yield takeLatest(SIGNUP, signupSaga);
@@ -314,6 +327,7 @@ export function* userSaga() {
   yield takeLatest(LOAD_FOLLOWERS, loadFollowersSaga);
   yield takeLatest(LOAD_FOLLOWINGS, loadFollowingsSaga);
   yield takeLatest(CHANGE_NICKNAME, changeNicknameSaga);
+  yield takeLatest(LOAD_USERINFO, loadUserinfoSaga);
 }
 
 const reducer = (state = initialState, action) => {
@@ -420,6 +434,10 @@ const reducer = (state = initialState, action) => {
     case LOAD_FOLLOWINGS:
     case LOAD_FOLLOWINGS_ERROR:
       return handleAsyncActions(LOAD_FOLLOWINGS, "followings")(state, action);
+    case LOAD_USERINFO:
+    case LOAD_USERINFO_SUCCESS:
+    case LOAD_USERINFO_ERROR:
+      return handleAsyncActions(LOAD_FOLLOWINGS, "userInfo")(state, action);
     default:
       return state;
   }

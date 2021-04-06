@@ -56,10 +56,10 @@ const Home = () => {
   );
 };
 
+// getServerSideProps: 접속한 상황 마다 화면이 바뀌어야 하는 경우
 // 화면을 그리기 전에 서버쪽에서 먼저 실행
 export const getServerSideProps = wrapper.getServerSideProps(
   async (context) => {
-    console.log("context: ", context);
     const cookie = context.req ? context.req.headers.cookie : "";
 
     // 로그인 정보가 공유되는 문제를 위해 분기처리 - 서버일 때, 쿠키가 있을 때 쿠키 전달. 아니면 쿠키 제거
