@@ -219,9 +219,8 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         reqPost: reducerUtils.success(action.payload),
-        // mainPosts: action.payload.concat(state.mainPosts),
-        mainPosts: action.payload,
-        hasMorePosts: state.mainPosts.length < 50,
+        mainPosts: state.mainPosts.concat(action.payload),
+        hasMorePosts: action.payload.length === 10,
       };
     case LOAD_POST_ERROR:
       return handleAsyncActions(LOAD_POST, "reqPost")(state, action);

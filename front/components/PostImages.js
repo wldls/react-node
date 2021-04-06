@@ -89,6 +89,7 @@ const PostImages = ({ images }) => {
       </div>
     );
   }
+  return <div></div>;
 };
 
 PostImages.propTypes = {
