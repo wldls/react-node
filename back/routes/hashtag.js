@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { Op } = require("sequelize");
 const { Post, Hashtag, Image, Comment, User } = require("../models");
 
 // GET /hashtag/:hashtag

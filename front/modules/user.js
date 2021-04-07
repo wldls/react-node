@@ -437,7 +437,7 @@ const reducer = (state = initialState, action) => {
     case LOAD_USERINFO:
     case LOAD_USERINFO_SUCCESS:
     case LOAD_USERINFO_ERROR:
-      return handleAsyncActions(LOAD_FOLLOWINGS, "userInfo")(state, action);
+      return handleAsyncActions(LOAD_USERINFO, "userInfo")(state, action);
     default:
       return state;
   }

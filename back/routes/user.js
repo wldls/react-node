@@ -1,14 +1,17 @@
 const express = require("express");
 const bcrypt = require("bcrypt"); // 비밀번호 암호화 라이브러리
 const passport = require("passport");
-const { Post, User } = require("../models");
+
+const { Op } = require("sequelize");
+const { Post, User, Image, Comment } = require("../models");
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 
 const router = express.Router();
 
-// GET /user
+// myinfo: GET /user
 router.get("/", async (req, res, next) => {
   try {
+    console.log(req.headers);
     if (req.user) {
       const fullUserWithoutPassword = await User.findOne({
         where: { id: req.user.id },
@@ -98,47 +101,66 @@ router.post("/", isNotLoggedIn, async (req, res, next) => {
   }
 });
 
-// GET /user/1/posts
+// loadUserPosts: GET /user/1/posts
 router.get("/:userId/posts", async (req, res, next) => {
   try {
-    const lastId = Number(req.query.lastId);
-    const where = { UserId: lastId };
+    const user = await User.findOne({ where: { id: req.params.userId } });
+    if (user) {
+      const lastId = Number(req.query.lastId);
+      const where = {};
 
-    if (lastId) {
-      // 초기 로딩이 아닐 때(초기 로딩일 때는 최신순으로 10개)
-      where.id = {
-        [Op.lt]: parseInt(lastId),
-      };
+      if (lastId) {
+        // 초기 로딩이 아닐 때(초기 로딩일 때는 최신순으로 10개)
+        where.id = {
+          [Op.lt]: parseInt(lastId),
+        };
+      }
+
+      const posts = await user.getPosts({
+        where,
+        limit: 10,
+        include: [
+          {
+            // 글 작성자
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+          {
+            // 글 작성자
+            model: User,
+            through: "Like",
+            as: "Likers",
+            attributes: ["id"],
+          },
+          {
+            model: Post,
+            as: "Retweet",
+            include: [
+              {
+                model: User,
+                attributes: ["id", "nickname"],
+              },
+              { model: Image },
+            ],
+          },
+          {
+            // 좋아요 누른 사람
+            model: User,
+            as: "Likers",
+            attributes: ["id"],
+          },
+          { model: Image },
+          {
+            model: Comment,
+            include: [{ model: User, attributes: ["id", "nickname"] }],
+          },
+        ],
+        // offset: 0, // offset 부터 limit 개수까지 가져옴 - 게시글 추가 삭제시 문제가 발생
+      });
+      res.status(200).json(posts);
+    } else {
+      res.status(404).send("존재하지 않는 사용자입니다.");
     }
-
-    const posts = await Post.findAll({
-      where,
-      limit: 10,
-      order: [
-        ["createdAt", "DESC"],
-        // [Comment, "createdAt", "DESC"],
-      ],
-      include: [
-        {
-          // 글 작성자
-          model: User,
-          attributes: ["id", "nickname"],
-        },
-        {
-          // 좋아요 누른 사람
-          model: User,
-          as: "Likers",
-          attributes: ["id"],
-        },
-        { model: Image },
-        {
-          model: Comment,
-          include: [{ model: User, attributes: ["id", "nickname"] }],
-        },
-      ],
-      // offset: 0, // offset 부터 limit 개수까지 가져옴 - 게시글 추가 삭제시 문제가 발생
-    });
-    res.status(200).json(posts);
   } catch (error) {
     console.error(error);
     next(error);

@@ -296,9 +296,15 @@ const reducer = (state = initialState, action) => {
         hasMorePosts: action.payload.length === 10,
       };
     case LOAD_USER_POSTS:
-    case LOAD_USER_POSTS_SUCCESS:
     case LOAD_USER_POSTS_ERROR:
       return handleAsyncActions(LOAD_POST, "reqPost")(state, action);
+    case LOAD_USER_POSTS_SUCCESS:
+      return {
+        ...state,
+        reqPost: reducerUtils.success(action.payload),
+        mainPosts: state.mainPosts.concat(action.payload),
+        hasMorePosts: action.payload.length === 10,
+      };
     case LOAD_HASHTAG_POSTS:
     case LOAD_HASHTAG_POSTS_SUCCESS:
     case LOAD_HASHTAG_POSTS_ERROR:

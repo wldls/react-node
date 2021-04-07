@@ -66,6 +66,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
     axios.defaults.headers.Cookie = "";
 
     if (context.req && cookie) {
+      console.log("////////////////////set cookies");
       // 서버로 쿠키 전달
       axios.defaults.headers.Cookie = cookie;
     }

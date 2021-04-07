@@ -4,6 +4,7 @@ import { END } from "redux-saga";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import Head from "next/head";
+import { Card, Avatar, Button } from "antd";
 
 import AppLayout from "../../components/AppLayout";
 import PostCard from "../../components/PostCard";
@@ -30,7 +31,7 @@ const User = () => {
         if (hasMorePosts && !reqPosts.loading) {
           const mainPostsLen = mainPosts.length;
           const lastId = mainPostsLen ? mainPosts[mainPostsLen - 1].id : 0; // 마지막 게시글의 id
-          dispatch(loadUserPosts({ lastId, id }));
+          dispatch(loadUserPosts({ id, lastId }));
         }
       }
     };
@@ -48,45 +49,42 @@ const User = () => {
   return (
     <AppLayout>
       <Head>
-        <title>{data.User.nickname}님의 게시글</title>
-        <meta name="description" content={data.content} />
+        <title>{data.nickname}님의 게시글</title>
+        <meta name="description" content={`${data.nickname}님의 게시글`} />
+        <meta property="og:title" content={`${data.nickname} 님의 게시글`} />
         <meta
-          property="og:title"
-          content={`${data.User.nickname} 님의 게시글`}
+          property="og:description"
+          content={`${data.nickname} 님의 게시글`}
         />
         <meta
           property="og:image"
-          content={
-            data.Images[0]
-              ? data.Images[0].src
-              : "https://nodebird.com/favicon.ico"
-          }
+          content={"https://nodebird.com/favicon.ico"}
         />
         <meta property="og:url" content={`https://nodebird.com/user/${id}`} />
       </Head>
-      {userInfo ? (
+      {data ? (
         <Card
           actions={[
             <div key="twit">
               짹짹
               <br />
-              {userInfo.length}
+              {data.Posts}
             </div>,
             <div key="followings">
               팔로잉
               <br />
-              {userInfo.Followings}
+              {data.Followings}
             </div>,
             <div key="follower">
               팔로워
               <br />
-              {userInfo.Followers}
+              {data.Followers}
             </div>,
           ]}
         >
           <Card.Meta
-            avatar={<Avatar>{userInfo.nickname[0]}</Avatar>}
-            title={userInfo.nickname}
+            avatar={<Avatar>{data.nickname[0]}</Avatar>}
+            title={data.nickname}
           />
         </Card>
       ) : null}
@@ -121,8 +119,8 @@ export const getServerSideProps = wrapper.getServerSideProps(
     // sagaTask는 configureStore에 구현되어있다.
     await context.store.sagaTask.toPromise();
 
-    // console.log("getState", context.store.getState().post.mainPosts);
-    // return { props: {} };
+    console.log("getState", context.store.getState().post.mainPosts);
+    return { props: {} };
   }
 );
 
