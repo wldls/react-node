@@ -7,14 +7,14 @@ import PostForm from "../components/PostForm";
 import PostCard from "../components/PostCard";
 import { useDispatch, useSelector } from "react-redux";
 import wrapper from "../store/configureStore";
-import { loadPost } from "../modules/post";
+import { loadPosts } from "../modules/post";
 import { loadMyinfo } from "../modules/user";
 
 const Home = () => {
   const dispatch = useDispatch();
   const { me } = useSelector((state) => state.user);
   const { retweet } = useSelector((state) => state.post);
-  const { mainPosts, hasMorePosts, reqPost } = useSelector(
+  const { mainPosts, hasMorePosts, reqPosts } = useSelector(
     (state) => state.post
   );
 
@@ -31,10 +31,10 @@ const Home = () => {
         scrollHeight = document.documentElement.scrollHeight;
 
       if (scrollY + clientHeight >= scrollHeight - 500) {
-        if (hasMorePosts && !reqPost.loading) {
+        if (hasMorePosts && !reqPosts.loading) {
           const mainPostsLen = mainPosts.length;
           const lastId = mainPostsLen ? mainPosts[mainPostsLen - 1].id : 0; // 마지막 게시글의 id
-          dispatch(loadPost(lastId));
+          dispatch(loadPosts(lastId));
         }
       }
     };
@@ -44,7 +44,7 @@ const Home = () => {
     return () => {
       window.removeEventListener("scroll", onScroll);
     };
-  }, [hasMorePosts, reqPost, mainPosts]);
+  }, [hasMorePosts, reqPosts, mainPosts]);
 
   return (
     <AppLayout>
@@ -72,7 +72,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
 
     // context 안에 store가 들어있음
     context.store.dispatch(loadMyinfo());
-    context.store.dispatch(loadPost());
+    context.store.dispatch(loadPosts());
 
     // request가 success가 될 때까지 기다려줌
     context.store.dispatch(END);

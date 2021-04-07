@@ -8,7 +8,9 @@ const initialState = {
   mainPosts: [],
   imagePaths: [],
   hasMorePosts: true,
+  reqPosts: reducerUtils.initial(),
   reqPost: reducerUtils.initial(),
+  hashtagPost: reducerUtils.initial(),
   post: reducerUtils.initial(),
   removePost: reducerUtils.initial(),
   comment: reducerUtils.initial(),
@@ -22,6 +24,18 @@ const initialState = {
 const LOAD_POST = "LOAD_POST";
 const LOAD_POST_SUCCESS = "LOAD_POST_SUCCESS";
 const LOAD_POST_ERROR = "LOAD_POST_ERROR";
+
+const LOAD_POSTS = "LOAD_POSTS";
+const LOAD_POSTS_SUCCESS = "LOAD_POSTS_SUCCESS";
+const LOAD_POSTS_ERROR = "LOAD_POSTS_ERROR";
+
+const LOAD_USER_POSTS = "LOAD_USER_POSTS";
+const LOAD_USER_POSTS_SUCCESS = "LOAD_USER_POSTS_SUCCESS";
+const LOAD_USER_POSTS_ERROR = "LOAD_USER_POSTS_ERROR";
+
+const LOAD_HASHTAG_POSTS = "LOAD_HASHTAG_POSTS";
+const LOAD_HASHTAG_POSTS_SUCCESS = "LOAD_HASHTAG_POSTS_SUCCESS";
+const LOAD_HASHTAG_POSTS_ERROR = "LOAD_HASHTAG_POSTS_ERROR";
 
 const ADD_POST = "ADD_POST";
 const ADD_POST_SUCCESS = "ADD_POST_SUCCESS";
@@ -53,7 +67,15 @@ const RETWEET = "RETWEET";
 const RETWEET_SUCCESS = "RETWEET_SUCCESS";
 const RETWEET_ERROR = "RETWEET_ERROR";
 
+export const loadPosts = (payload) => ({ type: LOAD_POSTS, payload });
+export const loadUserPosts = (payload) => ({ type: LOAD_USER_POSTS, payload });
+export const loadHashtagPosts = (payload) => ({
+  type: LOAD_HASHTAG_POSTS,
+  payload,
+});
+
 export const loadPost = (payload) => ({ type: LOAD_POST, payload });
+
 export const addPost = (payload) => ({ type: ADD_POST, payload });
 export const removePostAciton = (payload) => ({ type: REMOVE_POST, payload });
 
@@ -76,6 +98,53 @@ export const retweetAction = (payload) => ({
   type: RETWEET,
   payload,
 });
+
+function* loadPostsSaga(action) {
+  try {
+    const result = yield call(postAPI.loadPosts, action.payload); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
+    yield put({
+      type: LOAD_POSTS_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    yield put({
+      type: LOAD_POSTS_ERROR,
+      error: error.response.data,
+    });
+  }
+}
+
+function* loadUserPostsSaga(action) {
+  try {
+    const result = yield call(postAPI.loadUserPosts, action.payload); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
+    yield put({
+      type: LOAD_USER_POSTS_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    yield put({
+      type: LOAD_USER_POSTS_ERROR,
+      // error: error.response.data,
+      error: error,
+    });
+  }
+}
+
+function* loadHashtagPostsSaga(action) {
+  try {
+    const result = yield call(postAPI.loadHashtagPosts, action.payload); // loginAPI가 리턴할때까지 기다렸다가 result에 넣어줌
+    yield put({
+      type: LOAD_HASHTAG_POSTS_SUCCESS,
+      payload: result.data,
+    });
+  } catch (error) {
+    yield put({
+      type: LOAD_HASHTAG_POSTS_ERROR,
+      // error: error.response.data,
+      error: error,
+    });
+  }
+}
 
 function* loadPostSaga(action) {
   try {
@@ -200,6 +269,9 @@ function* rewteetSaga(action) {
 }
 
 export function* postSaga() {
+  yield takeLatest(LOAD_POSTS, loadPostsSaga);
+  yield takeLatest(LOAD_USER_POSTS, loadUserPostsSaga);
+  yield takeLatest(LOAD_HASHTAG_POSTS, loadHashtagPostsSaga);
   yield takeLatest(LOAD_POST, loadPostSaga);
   yield takeLatest(ADD_POST, addPostSaga);
   yield takeLatest(REMOVE_POST, removePostSaga);
@@ -213,15 +285,29 @@ export function* postSaga() {
 // (이전상태 ,액션) => 다음상태
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case LOAD_POST:
-      return handleAsyncActions(LOAD_POST, "reqPost")(state, action);
-    case LOAD_POST_SUCCESS:
+    case LOAD_POSTS:
+    case LOAD_POSTS_ERROR:
+      return handleAsyncActions(LOAD_POSTS, "reqPosts")(state, action);
+    case LOAD_POSTS_SUCCESS:
       return {
         ...state,
-        reqPost: reducerUtils.success(action.payload),
+        reqPosts: reducerUtils.success(action.payload),
         mainPosts: state.mainPosts.concat(action.payload),
         hasMorePosts: action.payload.length === 10,
       };
+    case LOAD_USER_POSTS:
+    case LOAD_USER_POSTS_SUCCESS:
+    case LOAD_USER_POSTS_ERROR:
+      return handleAsyncActions(LOAD_POST, "reqPost")(state, action);
+    case LOAD_HASHTAG_POSTS:
+    case LOAD_HASHTAG_POSTS_SUCCESS:
+    case LOAD_HASHTAG_POSTS_ERROR:
+      return handleAsyncActions(LOAD_HASHTAG_POSTS, "hashtagPost")(
+        state,
+        action
+      );
+    case LOAD_POST:
+    case LOAD_POST_SUCCESS:
     case LOAD_POST_ERROR:
       return handleAsyncActions(LOAD_POST, "reqPost")(state, action);
     case ADD_POST:
