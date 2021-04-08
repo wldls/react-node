@@ -15,7 +15,20 @@ import { loadMyinfo } from "../../modules/user";
 const Post = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { data } = useSelector((state) => state.post.reqPost);
+  const { data, error } = useSelector((state) => state.post.reqPost);
+
+  if (router.isFallback) {
+    return <div>로딩중...</div>;
+  }
+
+  if (!data && error) {
+    return (
+      <AppLayout>
+        <div>{error}</div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <Head>
@@ -39,6 +52,21 @@ const Post = () => {
     </AppLayout>
   );
 };
+
+// getStaticProps : 다이나믹 라우팅일 때 사용
+// getStaticProps를 사용하려면 getStaticPaths이 반드시 있어야 함
+// export async function getStaticPaths() {
+//   return {
+//     // id번호에 따른 게시글이 미리 build가 된다.
+//     paths: [
+//       { params: { id: "1" } },
+//       { params: { id: "2" } },
+//       { params: { id: "3" } },
+//       { params: { id: "4" } },
+//     ],
+//     fallback: true, // router.isFallback이 작동
+//   };
+// }
 
 export const getServerSideProps = wrapper.getServerSideProps(
   async (context) => {

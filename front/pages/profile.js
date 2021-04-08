@@ -1,36 +1,67 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Head from "next/head";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Router from "next/router";
 import { END } from "@redux-saga/core";
+import useSWR from "swr";
 
 import AppLayout from "../components/AppLayout";
 import NicknameEditForm from "../components/NicknameEditForm";
 import FollowList from "../components/FollowList";
 import {
-  loadFollowersAction,
-  loadFollowingsAction,
+  // loadFollowersAction,
+  // loadFollowingsAction,
   loadMyinfo,
 } from "../modules/user";
 import wrapper from "../store/configureStore";
+import axios from "axios";
+
+const fetcher = (url) =>
+  axios.get(url, { withCredentials: true }).then((result) => result.data);
 
 const Profile = () => {
-  const dispatch = useDispatch();
   const { me } = useSelector((state) => state.user);
+  const [followersLimit, setFollowersLimit] = useState(3);
+  const [followingsLimit, setFollowingsLimit] = useState(3);
 
-  useEffect(() => {
-    dispatch(loadFollowersAction());
-    dispatch(loadFollowingsAction());
-  }, []);
+  // dispatch 대신 swr을 사용하여 data load
+  const { data: followersData = [], error: followerError } = useSWR(
+    `http://localhost:3065/user/followers?limit=${followersLimit}`,
+    fetcher
+  );
 
+  const { data: followingsData = [], error: followingError } = useSWR(
+    `http://localhost:3065/user/followings?limit=${followingsLimit}`,
+    fetcher
+  );
+
+  // useEffect(() => {
+  //   dispatch(loadFollowersAction());
+  //   dispatch(loadFollowingsAction());
+  // }, []);
+
+  // 어떤 경우에도 hooks는 모두 다 실행되어야 하므로 return 이후에 hooks를 실행해서는 안 된다.
   useEffect(() => {
     if (!me) {
       Router.push("/");
     }
   }, [me]);
 
+  const loadMoreFollowings = useCallback(() => {
+    setFollowingsLimit((prev) => prev + 3);
+  });
+
+  const loadMoreFollowers = useCallback(() => {
+    setFollowersLimit((prev) => prev + 3);
+  });
+
   if (!me) {
-    return null;
+    return "내 정보 로딩중...";
+  }
+
+  if (followerError || followingError) {
+    console.error(followerError || followingError);
+    return "팔로잉/팔로워 로딩 중 에러가 발생합니다.";
   }
 
   return (
@@ -40,8 +71,20 @@ const Profile = () => {
       </Head>
       <AppLayout>
         <NicknameEditForm />
-        <FollowList header="팔로잉 목록" data={me.Followings} />
-        <FollowList header="팔로워 목록" data={me.Followers} />
+        <FollowList
+          header="팔로잉 목록"
+          data={followingsData}
+          onClickMore={loadMoreFollowings}
+          // 데이터도 없고 에러 정보도 없을 때
+          loading={!followingsData && !followingsError}
+        />
+        <FollowList
+          header="팔로워 목록"
+          data={followersData}
+          onClickMore={loadMoreFollowers}
+          // 데이터도 없고 에러 정보도 없을 때
+          loading={!followersData && !followersError}
+        />
       </AppLayout>
     </>
   );

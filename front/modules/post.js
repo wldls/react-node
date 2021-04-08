@@ -1,5 +1,5 @@
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
-import { takeLatest, put, delay, call } from "redux-saga/effects";
+import { takeLatest, put, call, throttle } from "redux-saga/effects";
 import { addPostMine, removePostMine } from "./user";
 import produce from "immer";
 import * as postAPI from "../api/post";
@@ -124,8 +124,7 @@ function* loadUserPostsSaga(action) {
   } catch (error) {
     yield put({
       type: LOAD_USER_POSTS_ERROR,
-      // error: error.response.data,
-      error: error,
+      error: error.response.data,
     });
   }
 }
@@ -138,10 +137,11 @@ function* loadHashtagPostsSaga(action) {
       payload: result.data,
     });
   } catch (error) {
+    console.log(error);
     yield put({
       type: LOAD_HASHTAG_POSTS_ERROR,
-      // error: error.response.data,
       error: error,
+      // error: error.response.data,
     });
   }
 }
@@ -297,7 +297,7 @@ const reducer = (state = initialState, action) => {
       };
     case LOAD_USER_POSTS:
     case LOAD_USER_POSTS_ERROR:
-      return handleAsyncActions(LOAD_POST, "reqPost")(state, action);
+      return handleAsyncActions(LOAD_USER_POSTS, "reqPost")(state, action);
     case LOAD_USER_POSTS_SUCCESS:
       return {
         ...state,
@@ -305,8 +305,14 @@ const reducer = (state = initialState, action) => {
         mainPosts: state.mainPosts.concat(action.payload),
         hasMorePosts: action.payload.length === 10,
       };
-    case LOAD_HASHTAG_POSTS:
     case LOAD_HASHTAG_POSTS_SUCCESS:
+      return {
+        ...state,
+        hashtagPost: reducerUtils.success(action.payload),
+        mainPosts: state.mainPosts.concat(action.payload),
+        hasMorePosts: action.payload.length === 10,
+      };
+    case LOAD_HASHTAG_POSTS:
     case LOAD_HASHTAG_POSTS_ERROR:
       return handleAsyncActions(LOAD_HASHTAG_POSTS, "hashtagPost")(
         state,

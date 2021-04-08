@@ -12,7 +12,7 @@ router.get("/:hashtag", async (req, res, next) => {
     if (lastId) {
       // 초기 로딩이 아닐 때(초기 로딩일 때는 최신순으로 10개)
       where.id = {
-        [Op.lt]: parseInt(lastId),
+        [Op.lt]: lastId,
       };
     }
 
@@ -26,7 +26,7 @@ router.get("/:hashtag", async (req, res, next) => {
       include: [
         {
           model: Hashtag,
-          where: { name: req.params.hashtag },
+          where: { name: decodeURIComponent(req.params.hashtag) },
         },
         {
           // 글 작성자

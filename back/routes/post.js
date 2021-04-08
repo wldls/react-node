@@ -52,6 +52,15 @@ router.get("/:postId", async (req, res, next) => {
       where: { id: post.id },
       include: [
         {
+          model: User,
+          attributes: ["id", "nickname"],
+        },
+        {
+          model: User,
+          as: "Likers",
+          attributes: ["id"],
+        },
+        {
           model: Post,
           as: "Retweet",
           include: [
@@ -64,15 +73,7 @@ router.get("/:postId", async (req, res, next) => {
             },
           ],
         },
-        {
-          model: User,
-          attributes: ["id", "nickname"],
-        },
-        {
-          model: User,
-          as: "Likers",
-          attributes: ["id"],
-        },
+
         { model: Image },
         {
           model: Comment,

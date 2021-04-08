@@ -1,14 +1,16 @@
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios";
 import Head from "next/head";
 import Router from "next/router";
-import AppLayout from "../components/AppLayout";
 import { Form, Input, Checkbox, Button } from "antd";
-import useinput from "../hooks/useInput";
 import { useDispatch, useSelector } from "react-redux";
-import { loadMyinfo, signupAction } from "../modules/user";
 import { END } from "@redux-saga/core";
+
+import useinput from "../hooks/useInput";
 import wrapper from "../store/configureStore";
+import AppLayout from "../components/AppLayout";
+import { loadMyinfo, signupAction } from "../modules/user";
 
 const ErrorMessage = styled.div`
   color: red;

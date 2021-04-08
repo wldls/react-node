@@ -38,41 +38,6 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// GET /user
-router.get("/:userId", async (req, res, next) => {
-  try {
-    const fullUserWithoutPassword = await User.findOne({
-      where: { id: req.params.userId },
-      attributes: {
-        exclude: ["password"],
-      },
-      include: [
-        {
-          model: Post,
-          attributes: ["id"],
-        },
-        { model: User, as: "Followings", attributes: ["id"] },
-        { model: User, as: "Followers", attributes: ["id"] },
-      ],
-    });
-
-    if (fullUserWithoutPassword) {
-      const data = fullUserWithoutPassword.toJSON();
-      // 타인의 정보를 가져올 때는 개인정보 보호를 위해 서버 측에서 갯수만 보내준다.
-      data.Posts = data.Posts.length;
-      data.Followers = data.Followers.length;
-      data.Followings = data.Followings.length;
-
-      res.status(200).json(data);
-    } else {
-      res.status(404).send("존재하지 않는 사용자입니다.");
-    }
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
 // Post /user
 router.post("/", isNotLoggedIn, async (req, res, next) => {
   try {
@@ -98,72 +63,6 @@ router.post("/", isNotLoggedIn, async (req, res, next) => {
   } catch (error) {
     console.error(error);
     next(error); // status 500
-  }
-});
-
-// loadUserPosts: GET /user/1/posts
-router.get("/:userId/posts", async (req, res, next) => {
-  try {
-    const user = await User.findOne({ where: { id: req.params.userId } });
-    if (user) {
-      const lastId = Number(req.query.lastId);
-      const where = {};
-
-      if (lastId) {
-        // 초기 로딩이 아닐 때(초기 로딩일 때는 최신순으로 10개)
-        where.id = {
-          [Op.lt]: parseInt(lastId),
-        };
-      }
-
-      const posts = await user.getPosts({
-        where,
-        limit: 10,
-        include: [
-          {
-            // 글 작성자
-            model: User,
-            attributes: ["id", "nickname"],
-          },
-          {
-            // 글 작성자
-            model: User,
-            through: "Like",
-            as: "Likers",
-            attributes: ["id"],
-          },
-          {
-            model: Post,
-            as: "Retweet",
-            include: [
-              {
-                model: User,
-                attributes: ["id", "nickname"],
-              },
-              { model: Image },
-            ],
-          },
-          {
-            // 좋아요 누른 사람
-            model: User,
-            as: "Likers",
-            attributes: ["id"],
-          },
-          { model: Image },
-          {
-            model: Comment,
-            include: [{ model: User, attributes: ["id", "nickname"] }],
-          },
-        ],
-        // offset: 0, // offset 부터 limit 개수까지 가져옴 - 게시글 추가 삭제시 문제가 발생
-      });
-      res.status(200).json(posts);
-    } else {
-      res.status(404).send("존재하지 않는 사용자입니다.");
-    }
-  } catch (error) {
-    console.error(error);
-    next(error);
   }
 });
 
@@ -228,6 +127,144 @@ router.patch("/nickname", isLoggedIn, async (req, res, next) => {
   }
 });
 
+router.get("/followers", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(403).send("사용자가 없습니다.");
+    }
+    const followers = await user.getFollowers({
+      limit: Number(req.query.limit),
+    });
+    res.status(200).json(followers);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get("/followings", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(403).send("사용자가 없습니다.");
+    }
+    const followings = await user.getFollowings({
+      limit: Number(req.query.limit),
+    });
+    res.status(200).json(followings);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// GET /user
+// 다른 url을 불러올 때 userId라고 오해할 수 있으므로 params가 붙은 url은 아래쪽으로 내려주는 것이 좋다.
+router.get("/:userId", async (req, res, next) => {
+  try {
+    const fullUserWithoutPassword = await User.findOne({
+      where: { id: req.params.userId },
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        {
+          model: Post,
+          attributes: ["id"],
+        },
+        { model: User, as: "Followings", attributes: ["id"] },
+        { model: User, as: "Followers", attributes: ["id"] },
+      ],
+    });
+
+    if (fullUserWithoutPassword) {
+      const data = fullUserWithoutPassword.toJSON();
+      // 타인의 정보를 가져올 때는 개인정보 보호를 위해 서버 측에서 갯수만 보내준다.
+      data.Posts = data.Posts.length;
+      data.Followers = data.Followers.length;
+      data.Followings = data.Followings.length;
+
+      res.status(200).json(data);
+    } else {
+      res.status(404).send("존재하지 않는 사용자입니다.");
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// loadUserPosts: GET /user/1/posts
+router.get("/:userId/posts", async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.params.userId } });
+    if (user) {
+      const lastId = Number(req.query.lastId);
+      const where = {};
+
+      if (lastId) {
+        // 초기 로딩이 아닐 때(초기 로딩일 때는 최신순으로 10개)
+        where.id = {
+          [Op.lt]: lastId,
+        };
+      }
+
+      const posts = await user.getPosts({
+        where,
+        limit: 10,
+        order: [
+          ["createdAt", "DESC"],
+          [Comment, "createdAt", "DESC"],
+        ],
+        include: [
+          {
+            // 글 작성자
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+          {
+            // 글 작성자
+            model: User,
+            through: "Like",
+            as: "Likers",
+            attributes: ["id"],
+          },
+          {
+            model: Post,
+            as: "Retweet",
+            include: [
+              {
+                model: User,
+                attributes: ["id", "nickname"],
+              },
+              { model: Image },
+            ],
+          },
+          {
+            // 좋아요 누른 사람
+            model: User,
+            as: "Likers",
+            attributes: ["id"],
+          },
+          { model: Image },
+          {
+            model: Comment,
+            include: [{ model: User, attributes: ["id", "nickname"] }],
+          },
+        ],
+        // offset: 0, // offset 부터 limit 개수까지 가져옴 - 게시글 추가 삭제시 문제가 발생
+      });
+      res.status(200).json(posts);
+    } else {
+      res.status(404).send("존재하지 않는 사용자입니다.");
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 // PATCH /user/1/follow
 router.patch("/:userId/follow", isLoggedIn, async (req, res, next) => {
   try {
@@ -269,34 +306,6 @@ router.delete("/follower/:userId", isLoggedIn, async (req, res, next) => {
     }
     await user.removeFollowings(req.user.id);
     res.status(200).json({ UserId: Number(req.params.userId) });
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
-router.get("/followers", isLoggedIn, async (req, res, next) => {
-  try {
-    const user = await User.findOne({ where: { id: req.user.id } });
-    if (!user) {
-      return res.status(403).send("사용자가 없습니다.");
-    }
-    const followers = await user.getFollowers();
-    res.status(200).json(followers);
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
-router.get("/followings", isLoggedIn, async (req, res, next) => {
-  try {
-    const user = await User.findOne({ where: { id: req.user.id } });
-    if (!user) {
-      return res.status(403).send("사용자가 없습니다.");
-    }
-    const followings = await user.getFollowings();
-    res.status(200).json(followings);
   } catch (error) {
     console.error(error);
     next(error);

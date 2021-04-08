@@ -6,8 +6,9 @@ export const loadPosts = (payload) =>
 export const loadUserPosts = ({ id, lastId }) =>
   client.get(`/user/${id}/posts?lastId=${lastId || 0}`);
 
-export const loadHashtagPosts = ({ id, lastId }) =>
-  client.get(`/hashtag/${id}?lastId=${lastId || 0}`);
+// api요청시 주소에 한글이 들어가면 에러가 발생하므로 encode 실행
+export const loadHashtagPosts = ({ tag, lastId }) =>
+  client.get(`/hashtag/${encodeURIComponent(tag)}?lastId=${lastId || 0}`);
 
 export const loadPost = (payload) => client.get(`/post/${payload}`);
 

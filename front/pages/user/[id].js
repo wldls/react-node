@@ -4,7 +4,7 @@ import { END } from "redux-saga";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import Head from "next/head";
-import { Card, Avatar, Button } from "antd";
+import { Card, Avatar } from "antd";
 
 import AppLayout from "../../components/AppLayout";
 import PostCard from "../../components/PostCard";
@@ -16,7 +16,7 @@ const User = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
-  const { mainPosts, hasMorePosts, reqPosts } = useSelector(
+  const { mainPosts, hasMorePosts, reqPost } = useSelector(
     (state) => state.post
   );
   const { data } = useSelector((state) => state.user.userInfo);
@@ -28,7 +28,7 @@ const User = () => {
         scrollHeight = document.documentElement.scrollHeight;
 
       if (scrollY + clientHeight >= scrollHeight - 500) {
-        if (hasMorePosts && !reqPosts.loading) {
+        if (hasMorePosts && !reqPost.loading) {
           const mainPostsLen = mainPosts.length;
           const lastId = mainPostsLen ? mainPosts[mainPostsLen - 1].id : 0; // 마지막 게시글의 id
           dispatch(loadUserPosts({ id, lastId }));
@@ -41,7 +41,7 @@ const User = () => {
     return () => {
       window.removeEventListener("scroll", onScroll);
     };
-  }, [hasMorePosts, reqPosts, mainPosts.length]);
+  }, [hasMorePosts, reqPost.loading, mainPosts.length]);
 
   if (!data) {
     return null;
