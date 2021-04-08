@@ -59,6 +59,7 @@ export const getStaticProps = wrapper.getStaticProps(async (context) => {
   context.store.dispatch(loadUserinfo(1));
   context.store.dispatch(END);
   await context.store.sagaTask.toPromise();
+  return { props: {} };
 });
 
 export default About;

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "next"
+    "dev": "next",
+    "build": "next build"
   },
   "repository": {
     "type": "git",
@@ -18,12 +19,14 @@
   "homepage": "https://github.com/wldls/react-node#readme",
   "dependencies": {
     "@ant-design/icons": "^4.5.0",
+    "@next/bundle-analyzer": "^10.1.3",
     "antd": "^4.14.0",
     "axios": "^0.21.1",
     "babel-plugin-styled-components": "^1.12.0",
     "faker": "^5.4.0",
     "immer": "^9.0.1",
     "lodash": "^4.17.21",
+    "moment": "^2.29.1",
     "next": "^9.5.5",
     "next-redux-saga": "^4.1.2",
     "next-redux-wrapper": "^6.0.2",

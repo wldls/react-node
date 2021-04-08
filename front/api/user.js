@@ -5,11 +5,7 @@ export const logout = () => client.post("/user/logout");
 
 export const signup = (payload) => client.post("/user", payload);
 export const myinfo = () => client.get("/user");
-// export const userInfo = (payload) => client.get(`/user/${payload}`);
-export const userInfo = (payload) => {
-  console.log(payload);
-  return client.get(`/user/${payload}`);
-};
+export const userInfo = (payload) => client.get(`/user/${payload}`);
 
 export const follow = (payload) => client.patch(`/user/${payload}/follow`);
 export const unFollow = (payload) => client.delete(`/user/${payload}/follow`);
