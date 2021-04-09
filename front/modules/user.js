@@ -1,7 +1,7 @@
 import { takeLatest, put, call } from "redux-saga/effects";
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
 import * as userAPI from "../api/user";
-import produce from "immer";
+import produce from "../util/produce";
 
 export const initialState = {
   login: reducerUtils.initial(),

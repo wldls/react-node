@@ -1,7 +1,7 @@
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
 import { takeLatest, put, call, throttle } from "redux-saga/effects";
 import { addPostMine, removePostMine } from "./user";
-import produce from "immer";
+import produce from "../util/produce";
 import * as postAPI from "../api/post";
 
 const initialState = {
