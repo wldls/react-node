@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
-import axios from "axios";
 import Head from "next/head";
 import Router from "next/router";
 import { Form, Input, Checkbox, Button } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { END } from "@redux-saga/core";
 
+import client from "../api";
 import useinput from "../hooks/useInput";
 import wrapper from "../store/configureStore";
 import AppLayout from "../components/AppLayout";
@@ -137,11 +137,11 @@ export const getServerSideProps = wrapper.getServerSideProps(
     const cookie = context.req ? context.req.headers.cookie : "";
 
     // 로그인 정보가 공유되는 문제를 위해 분기처리 - 서버일 때, 쿠키가 있을 때 쿠키 전달. 아니면 쿠키 제거
-    axios.defaults.headers.Cookie = "";
+    client.defaults.headers.Cookie = "";
 
     if (context.req && cookie) {
       // 서버로 쿠키 전달
-      axios.defaults.headers.Cookie = cookie;
+      client.defaults.headers.Cookie = cookie;
     }
 
     // context 안에 store가 들어있음

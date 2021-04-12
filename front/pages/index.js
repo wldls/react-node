@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-// import axios from "axios";
-import client from "../api/index";
+import client from "../api";
 import { END } from "redux-saga";
 
 import AppLayout from "../components/AppLayout";

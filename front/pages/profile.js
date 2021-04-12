@@ -4,7 +4,9 @@ import { useSelector } from "react-redux";
 import Router from "next/router";
 import { END } from "@redux-saga/core";
 import useSWR from "swr";
+import axios from "axios";
 
+import client from "../api";
 import AppLayout from "../components/AppLayout";
 import NicknameEditForm from "../components/NicknameEditForm";
 import FollowList from "../components/FollowList";
@@ -14,7 +16,6 @@ import {
   loadMyinfo,
 } from "../modules/user";
 import wrapper from "../store/configureStore";
-import axios from "axios";
 
 const fetcher = (url) =>
   axios.get(url, { withCredentials: true }).then((result) => result.data);
@@ -95,11 +96,11 @@ export const getServerSideProps = wrapper.getServerSideProps(
     const cookie = context.req ? context.req.headers.cookie : "";
 
     // 로그인 정보가 공유되는 문제를 위해 분기처리 - 서버일 때, 쿠키가 있을 때 쿠키 전달. 아니면 쿠키 제거
-    axios.defaults.headers.Cookie = "";
+    client.defaults.headers.Cookie = "";
 
     if (context.req && cookie) {
       // 서버로 쿠키 전달
-      axios.defaults.headers.Cookie = cookie;
+      client.defaults.headers.Cookie = cookie;
     }
 
     // context 안에 store가 들어있음
