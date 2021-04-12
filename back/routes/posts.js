@@ -41,6 +41,19 @@ router.get("/", async (req, res, next) => {
           model: Comment,
           include: [{ model: User, attributes: ["id", "nickname"] }],
         },
+        {
+          model: Post,
+          as: "Retweet",
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+            {
+              model: Image,
+            },
+          ],
+        },
       ],
       // offset: 0, // offset 부터 limit 개수까지 가져옴 - 게시글 추가 삭제시 문제가 발생
     });

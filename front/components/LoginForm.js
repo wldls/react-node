@@ -9,11 +9,15 @@ import { loginRequestAction } from "../modules/user";
 const ButtonWrapper = styled.div`
   margin-top: 10px;
   text-align: center;
+
+  button {
+    margin-right: 10px;
+  }
 `;
 
-const FormWrapper = styled(Form)`
-  padding: 10px;
-`;
+// const FormWrapper = styled(Form)`
+//   padding: 10px;
+// `;
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -48,7 +52,7 @@ const LoginForm = () => {
   // const style = useMemo(() => ({ marginTop: 10 }), [])
 
   return (
-    <FormWrapper onFinish={onSubmitForm}>
+    <Form onFinish={onSubmitForm}>
       <div>
         <label htmlFor="user-email">이메일</label>
         <br />
@@ -71,14 +75,19 @@ const LoginForm = () => {
         ></Input>
       </div>
       <ButtonWrapper>
-        <Button type="primary" htmlType="submit" loading={loading}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          shape="round"
+        >
           로그인
         </Button>
         <Link href="/signup">
           <a>회원가입</a>
         </Link>
       </ButtonWrapper>
-    </FormWrapper>
+    </Form>
   );
 };
 

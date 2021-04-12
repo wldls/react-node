@@ -11,7 +11,7 @@ const router = express.Router();
 // myinfo: GET /user
 router.get("/", async (req, res, next) => {
   try {
-    console.log(req.headers);
+    console.log("////////////////cookie: ", req.headers.cookie);
     if (req.user) {
       const fullUserWithoutPassword = await User.findOne({
         where: { id: req.user.id },
@@ -134,6 +134,7 @@ router.get("/followers", isLoggedIn, async (req, res, next) => {
       return res.status(403).send("사용자가 없습니다.");
     }
     const followers = await user.getFollowers({
+      attributes: ["id", "nickname"],
       limit: Number(req.query.limit),
     });
     res.status(200).json(followers);
@@ -150,6 +151,7 @@ router.get("/followings", isLoggedIn, async (req, res, next) => {
       return res.status(403).send("사용자가 없습니다.");
     }
     const followings = await user.getFollowings({
+      attributes: ["id", "nickname"],
       limit: Number(req.query.limit),
     });
     res.status(200).json(followings);
@@ -182,8 +184,8 @@ router.get("/:userId", async (req, res, next) => {
       const data = fullUserWithoutPassword.toJSON();
       // 타인의 정보를 가져올 때는 개인정보 보호를 위해 서버 측에서 갯수만 보내준다.
       data.Posts = data.Posts.length;
-      data.Followers = data.Followers.length;
       data.Followings = data.Followings.length;
+      data.Followers = data.Followers.length;
 
       res.status(200).json(data);
     } else {
@@ -213,10 +215,10 @@ router.get("/:userId/posts", async (req, res, next) => {
       const posts = await user.getPosts({
         where,
         limit: 10,
-        order: [
-          ["createdAt", "DESC"],
-          [Comment, "createdAt", "DESC"],
-        ],
+        // order: [
+        //   ["createdAt", "DESC"],
+        //   [Comment, "createdAt", "DESC"],
+        // ],
         include: [
           {
             // 글 작성자
@@ -244,6 +246,7 @@ router.get("/:userId/posts", async (req, res, next) => {
           {
             // 좋아요 누른 사람
             model: User,
+            through: "Like",
             as: "Likers",
             attributes: ["id"],
           },

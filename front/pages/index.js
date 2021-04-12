@@ -71,6 +71,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
     }
 
     // context 안에 store가 들어있음
+    console.log("////////////////////////////////////////load");
     context.store.dispatch(loadMyinfo());
     context.store.dispatch(loadPosts());
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect } from "react";
+import React, { useCallback, useRef, useEffect } from "react";
 import { Form, Input, Button } from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -7,6 +7,11 @@ import {
   removeImagesAction,
 } from "../modules/post";
 import useInput from "../hooks/useInput";
+import styled from "styled-components";
+
+const BtnWrapper = styled.div`
+  margin-top: 10px;
+`;
 
 const PostForm = () => {
   const dispatch = useDispatch();
@@ -65,7 +70,7 @@ const PostForm = () => {
         maxLength={140}
         placeholde="어떤 신기한 일이 있엇나요?"
       />
-      <div>
+      <BtnWrapper>
         <input
           type="file"
           name="image"
@@ -78,7 +83,7 @@ const PostForm = () => {
         <Button type="primary" style={{ float: "right" }} htmlType="submit">
           짹짹
         </Button>
-      </div>
+      </BtnWrapper>
       <div>
         {imagePaths.map((v, i) => (
           <div key={v} style={{ display: "inline-block" }}>

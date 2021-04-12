@@ -9,6 +9,10 @@ import LoginForm from "./LoginForm";
 import useInput from "../hooks/useInput";
 import Router from "next/router";
 
+const RowWrapper = styled(Row)`
+  padding: 0 10px;
+`;
+
 const SearchInput = styled(Input.Search)`
   vertical-align: middle;
 `;
@@ -24,7 +28,7 @@ const AppLayout = ({ children }) => {
 
   return (
     <div>
-      <Menu mode="horizontal">
+      <Menu mode="horizontal" style={{ marginBottom: "10px" }}>
         <Menu.Item>
           <Link href="/">
             <a>노드버드</a>
@@ -49,7 +53,7 @@ const AppLayout = ({ children }) => {
           </Link>
         </Menu.Item>
       </Menu>
-      <Row>
+      <RowWrapper gutter={[16, 16]}>
         <Col xs={24} md={6}>
           {me ? <UserProfile /> : <LoginForm />}
         </Col>
@@ -61,7 +65,7 @@ const AppLayout = ({ children }) => {
             Made by JIIN
           </a>
         </Col>
-      </Row>
+      </RowWrapper>
     </div>
   );
 };
