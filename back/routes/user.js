@@ -11,7 +11,6 @@ const router = express.Router();
 // myinfo: GET /user
 router.get("/", async (req, res, next) => {
   try {
-    console.log("////////////////cookie: ", req.headers.cookie);
     if (req.user) {
       const fullUserWithoutPassword = await User.findOne({
         where: { id: req.user.id },

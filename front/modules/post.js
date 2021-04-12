@@ -1,7 +1,7 @@
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
 import { takeLatest, put, call, throttle } from "redux-saga/effects";
 import { addPostMine, removePostMine } from "./user";
-import produce from "../util/produce";
+import utilProduce from "../util/produce";
 import * as postAPI from "../api/post";
 
 const initialState = {
@@ -325,7 +325,7 @@ const reducer = (state = initialState, action) => {
     case ADD_POST:
       return handleAsyncActions(ADD_POST, "post")(state, action);
     case ADD_POST_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.post = reducerUtils.success(action.payload);
         draft.mainPosts.unshift(action.payload);
         draft.imagePaths = [];
@@ -336,7 +336,7 @@ const reducer = (state = initialState, action) => {
       return handleAsyncActions(ADD_POST, "post")(state, action);
     case ADD_COMMENT_SUCCESS:
       // 불변성은 지키면서 액션을 통해 이전 상태를 다음 상태로 만들어내는 함수
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         const post = draft.mainPosts.find(
           (v) => v.id === action.payload.PostId
         );
@@ -359,7 +359,7 @@ const reducer = (state = initialState, action) => {
     case REMOVE_POST_ERROR:
       return handleAsyncActions(REMOVE_POST, "removePost")(state, action);
     case LIKE_POST_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         const post = draft.mainPosts.find(
           (v) => v.id === action.payload.PostId
         );
@@ -370,7 +370,7 @@ const reducer = (state = initialState, action) => {
     case LIKE_POST_ERROR:
       return handleAsyncActions(LIKE_POST, "likePost")(state, action);
     case UNLIKE_POST_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         const post = draft.mainPosts.find(
           (v) => v.id === action.payload.PostId
         );

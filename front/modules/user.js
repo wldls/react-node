@@ -1,7 +1,7 @@
 import { takeLatest, put, call } from "redux-saga/effects";
 import { reducerUtils, handleAsyncActions } from "../lib/asyncUtils";
 import * as userAPI from "../api/user";
-import produce from "../util/produce";
+import utilProduce from "../util/produce";
 
 export const initialState = {
   login: reducerUtils.initial(),
@@ -371,7 +371,7 @@ const reducer = (state = initialState, action) => {
         signup: reducerUtils.initial(),
       };
     case CHANGE_NICKNAME_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.nickname = action.payload.nickname;
       });
     case CHANGE_NICKNAME:
@@ -381,16 +381,16 @@ const reducer = (state = initialState, action) => {
         action
       );
     case ADD_POST_MINE:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.Posts.unshift({ id: action.payload });
       });
     case REMOVE_POST_MINE:
       const newPost = state.me.Posts.filter((v) => v.id !== action.payload);
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.Posts = newPost;
       });
     case FOLLOW_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.Followings.push({ id: action.payload.UserId });
         draft.follow = reducerUtils.success({ id: action.payload.UserId });
       });
@@ -398,7 +398,7 @@ const reducer = (state = initialState, action) => {
     case FOLLOW_ERROR:
       return handleAsyncActions(FOLLOW, "follow")(state, action);
     case UNFOLLOW_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.Followings = draft.me.Followings.filter(
           (v) => v.id !== action.payload.UserId
         );
@@ -408,7 +408,7 @@ const reducer = (state = initialState, action) => {
     case UNFOLLOW_ERROR:
       return handleAsyncActions(UNFOLLOW, "unFollow")(state, action);
     case REMOVE_FOLLOWER_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.Followers = draft.me.Followers.filter(
           (v) => v.id !== action.payload.UserId
         );
@@ -421,14 +421,14 @@ const reducer = (state = initialState, action) => {
         action
       );
     case LOAD_FOLLOWERS_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.Followers = action.payload;
       });
     case LOAD_FOLLOWERS:
     case LOAD_FOLLOWERS_ERROR:
       return handleAsyncActions(LOAD_FOLLOWERS, "followers")(state, action);
     case LOAD_FOLLOWINGS_SUCCESS:
-      return produce(state, (draft) => {
+      return utilProduce(state, (draft) => {
         draft.me.Followings = action.payload;
       });
     case LOAD_FOLLOWINGS:
