@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import axios from "axios";
+// import axios from "axios";
+import client from "../api/index";
 import { END } from "redux-saga";
 
 import AppLayout from "../components/AppLayout";
@@ -63,15 +64,14 @@ export const getServerSideProps = wrapper.getServerSideProps(
     const cookie = context.req ? context.req.headers.cookie : "";
 
     // 로그인 정보가 공유되는 문제를 위해 분기처리 - 서버일 때, 쿠키가 있을 때 쿠키 전달. 아니면 쿠키 제거
-    axios.defaults.headers.Cookie = "";
+    client.defaults.headers.Cookie = "";
 
     if (context.req && cookie) {
       // 서버로 쿠키 전달
-      axios.defaults.headers.Cookie = cookie;
+      client.defaults.headers.Cookie = cookie;
     }
 
     // context 안에 store가 들어있음
-    console.log("////////////////////////////////////////load");
     context.store.dispatch(loadMyinfo());
     context.store.dispatch(loadPosts());
 
