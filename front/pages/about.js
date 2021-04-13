@@ -55,11 +55,19 @@ const About = () => {
 };
 
 // getStaticProps: 언제 접속해도 데이터가 바뀔 일이 없는 경우 (예: 블로그 게시글, 뉴스 등)
-export const getStaticProps = wrapper.getStaticProps(async (context) => {
-  context.store.dispatch(loadUserinfo(1));
-  context.store.dispatch(END);
-  await context.store.sagaTask.toPromise();
-  return { props: {} };
-});
+// export const getStaticProps = wrapper.getStaticProps(async (context) => {
+//   context.store.dispatch(loadUserinfo(1));
+//   context.store.dispatch(END);
+//   await context.store.sagaTask.toPromise();
+//   return { props: {} };
+// });
+export const getServerSideProps = wrapper.getServerSideProps(
+  async (context) => {
+    context.store.dispatch(loadUserinfo(1));
+    context.store.dispatch(END);
+    await context.store.sagaTask.toPromise();
+    return { props: {} };
+  }
+);
 
 export default About;

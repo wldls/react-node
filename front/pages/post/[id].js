@@ -17,9 +17,9 @@ const Post = () => {
   const { id } = router.query;
   const { data, error } = useSelector((state) => state.post.reqPost);
 
-  if (router.isFallback) {
-    return <div>로딩중...</div>;
-  }
+  // if (router.isFallback) {
+  //   return <div>로딩중...</div>;
+  // }
 
   if (!data && error) {
     return (
