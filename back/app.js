@@ -15,6 +15,7 @@ const postsRouter = require("./routes/posts");
 const userRouter = require("./routes/user");
 const hashtagRouter = require("./routes/hashtag");
 const db = require("./models");
+const { backUrl } = require("../front/config/config");
 
 dotenv.config();
 const app = express();
@@ -40,7 +41,7 @@ if (process.env.NODE_ENV === "production") {
 // 모든 요청에 cors 처리
 app.use(
   cors({
-    origin: ["http://localhost:3000", "nodebird.com"],
+    origin: [backUrl, "nodebird.com"],
     credentials: true, // 쿠키도 같이 전달
   })
 );
